@@ -1,4 +1,12 @@
+import { NextFunction, Request, Response } from "express";
+
 declare global {
+  export type MiddleWareType = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => void;
+
   export type ProductType = "log" | "gift";
 
   export type CurrencyDetailsType = {

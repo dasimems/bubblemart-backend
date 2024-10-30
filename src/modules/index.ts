@@ -1,3 +1,5 @@
+// export const encryptToken
+
 export const generateAmount = (inputtedAmount: number): AmountType => {
     const amount = inputtedAmount * 1000,
       formattedAmount = amount / 1000,
