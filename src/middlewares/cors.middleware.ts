@@ -1,7 +1,13 @@
-import { NextFunction, Request, Response } from "express";
+import { Request } from "express";
 import cors, { CorsOptions } from "cors";
+import dotenv from "dotenv";
+import { MiddleWareType } from "../utils/types";
 
-const allowedOrigins: string[] = ["https://localhost:8000"];
+dotenv.config();
+const { env } = process;
+
+const originList = env.CLIENT_URL_LIST || "";
+const allowedOrigins: string[] = originList.split(",");
 
 const corsOptions: CorsOptions = {
   methods: "GET,PUT,POST,DELETE",
@@ -21,7 +27,7 @@ const corsOptionsDelegate = (
   }
 };
 
-const corsMiddleWare = (req: Request, res: Response, next: NextFunction) => {
+const corsMiddleWare: MiddleWareType = (req, res, next) => {
   cors(corsOptionsDelegate)(req, res, (err) => {
     if (err) {
       return res.status(403).json({ message: "CORS policy: Access denied." });

@@ -1,6 +1,8 @@
-import { app, env } from "./app";
+import { app, connectDB, env } from "./app";
 
 const port = env.PORT || 8000;
+
+connectDB().catch(console.dir);
 
 app.listen(port, () => {
   console.log(
