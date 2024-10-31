@@ -21,7 +21,7 @@ export type LoginBodyType = {
 
 export const loginController: ControllerType = async (req, res) => {
   const { body } = req;
-  const { email, password } = (body || {}) as LoginBodyType;
+  const { email: bodyEmail, password } = (body || {}) as LoginBodyType;
   const ipAddress = req?.ip || req?.connection?.remoteAddress;
 
   if (!ipAddress) {
@@ -29,6 +29,18 @@ export const loginController: ControllerType = async (req, res) => {
       .status(500)
       .json(constructErrorResponseBody("Unable to determine user!"));
   }
+
+  if (!bodyEmail || !password) {
+    return res
+      .status(400)
+      .json(
+        constructErrorResponseBody(
+          "Please provide both your email and password!"
+        )
+      );
+  }
+
+  const email = bodyEmail?.toLowerCase();
 
   try {
     const user = await UserModel.findOne({ email });
