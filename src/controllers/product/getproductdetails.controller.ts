@@ -21,7 +21,7 @@ const getProductDetails: ControllerType = async (req, res) => {
     if (!productDetails) {
       return res
         .status(404)
-        .json(constructErrorResponseBody("Invalid product ID"));
+        .json(constructErrorResponseBody("Product not found"));
     }
 
     const { amount, description, name, type, quantity, image, id } =
