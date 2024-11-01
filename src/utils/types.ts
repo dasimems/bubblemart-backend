@@ -102,4 +102,5 @@ export type ProductDetailsResponseType = {
 
 export type AllResponseType =
   | UserDetailsResponseType
-  | ProductDetailsResponseType[];
+  | ProductDetailsResponseType[]
+  | ProductDetailsResponseType;
