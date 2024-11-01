@@ -8,6 +8,7 @@ import {
   ProductType,
   UserDetailsType
 } from "../utils/types";
+import { Schema } from "mongoose";
 
 export const generateAmount = (inputtedAmount: number): AmountType => {
     const amount = inputtedAmount * 1000,
@@ -26,6 +27,9 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
       }
     };
   },
+  getBaseUrl = (protocol: string, host: string) => {
+    return `${protocol}://${host}/v1`;
+  },
   createUser = (
     email: string,
     name: string,
@@ -34,7 +38,8 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
     return {
       email,
       name,
-      password
+      password,
+      updates: []
     };
   },
   createProduct = (
@@ -43,7 +48,8 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
     quantity: number = 0,
     amount: number,
     image: string,
-    description: string
+    description: string,
+    createdBy: Schema.Types.ObjectId
   ): ProductDetailsType => ({
     name,
     type,
@@ -52,7 +58,8 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
     updates: [],
     amount: generateAmount(amount),
     image,
-    description
+    description,
+    createdBy
   }),
   generateProductResponse = () => {},
   createCart = (
@@ -68,14 +75,40 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
   }),
   constructSuccessResponseBody = (
     data: AllResponseType,
+    total?: number,
+    pageNum?: number,
+    activePage?: number,
     previousLink?: LinkType,
     nextLink?: LinkType
   ) => {
     let dataToReturn: {
       data: AllResponseType;
+      total?: number;
+      pageNum?: number;
+      activePage?: number;
       previousLink?: LinkType;
       nextLink?: LinkType;
     } = { data };
+
+    if (total !== undefined && total !== null && !isNaN(total)) {
+      dataToReturn = {
+        ...dataToReturn,
+        total
+      };
+    }
+
+    if (pageNum) {
+      dataToReturn = {
+        ...dataToReturn,
+        pageNum
+      };
+    }
+    if (activePage) {
+      dataToReturn = {
+        ...dataToReturn,
+        activePage
+      };
+    }
 
     if (previousLink) {
       dataToReturn = {
@@ -101,7 +134,6 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
     };
   },
   formatJoiErrors = (error: ValidationError) => {
-    console.log(error);
     if (
       !error ||
       !error.details ||

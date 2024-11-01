@@ -9,7 +9,7 @@ import {
 import { ControllerType, UserDetailsResponseType } from "../../utils/types";
 import dotenv from "dotenv";
 import UserModel from "../../models/UserModel";
-import { defaultErrorMessage } from "../../utils/variables";
+import { cookieKeys, defaultErrorMessage } from "../../utils/variables";
 dotenv.config();
 
 const { env } = process;
@@ -95,7 +95,7 @@ export const loginController: ControllerType = async (req, res) => {
 
     return res
       .status(200)
-      .cookie("auth", token, {
+      .cookie(cookieKeys.auth, token, {
         expires: calculateTokenExpirationDate(),
         secure: ENVIRONMENT?.toLowerCase() === "production"
       })

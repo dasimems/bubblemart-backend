@@ -1,5 +1,6 @@
 export const routeGroup = {
-    auth: "/auth"
+    auth: "/auth",
+    product: "/product"
   },
   allPaths = {
     login: `/login`,
@@ -11,5 +12,8 @@ export const routeGroup = {
     orders: "Orders",
     products: "Products",
     payments: "Payments"
+  },
+  cookieKeys = {
+    auth: "auth"
   },
   defaultErrorMessage = "System error! Couldn't determine error cause";

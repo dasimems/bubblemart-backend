@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { Schema } from "mongoose";
 
 export type Roles = "USER" | "ADMIN";
 
@@ -15,6 +16,7 @@ export type LinkType = {
   route: string;
   baseUrl: string;
   commonUrl: string;
+  link: string;
 };
 
 export type ProductType = "log" | "gift";
@@ -44,7 +46,9 @@ export type ProductDetailsType = {
   name: string;
   type: ProductType;
   quantity: number;
-  createdAt: Date;
+  createdAt?: Date;
+  createdBy: Schema.Types.ObjectId;
+  lastUpdatedAt?: Date;
   updates: ChangesType[];
   amount: AmountType;
   image: string;
@@ -54,6 +58,7 @@ export type ProductDetailsType = {
 export type CartDetailsType = {
   productId: string;
   createdAt: Date;
+  lastUpdatedAt?: Date;
   updates: ChangesType[];
   userId: string;
   quantity: string;
@@ -73,12 +78,28 @@ export type UserDetailsType = {
   password: string;
   role?: Roles;
   createdAt?: Date;
+  updates: ChangesType[];
   updatedAt?: Date;
   avatar?: string;
 };
 
+export type AuthenticationDestructuredType = {
+  userTokenRole: Roles;
+  userTokenId: string;
+  fetchedUserDetails: UserDetailsType;
+};
+
 export type UserDetailsResponseType = {
   id: string;
-} & Omit<UserDetailsType, "password">;
+} & Omit<UserDetailsType, "password" | "updates">;
 
-export type AllResponseType = UserDetailsResponseType;
+export type ProductDetailsResponseType = {
+  id: string;
+} & Omit<
+  ProductDetailsType,
+  "createdAt" | "createdBy" | "lastUpdatedAt" | "updates"
+>;
+
+export type AllResponseType =
+  | UserDetailsResponseType
+  | ProductDetailsResponseType[];
