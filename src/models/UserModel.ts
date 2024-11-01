@@ -9,7 +9,8 @@ const userSchema = new Schema<UserDetailsType>({
   },
   avatar: {
     type: String,
-    default: null
+    default: null,
+    lowercase: true
   },
   createdAt: {
     type: Date,

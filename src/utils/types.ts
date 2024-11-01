@@ -71,10 +71,10 @@ export type UserDetailsType = {
   email: string;
   name: string;
   password: string;
-  role: Roles;
-  createdAt: Date;
-  updatedAt: Date;
-  avatar: string;
+  role?: Roles;
+  createdAt?: Date;
+  updatedAt?: Date;
+  avatar?: string;
 };
 
 export type UserDetailsResponseType = {

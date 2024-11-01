@@ -1,8 +1,8 @@
 import express from "express";
-import loginRouter from "./auth/login.route";
-import { allRoutes } from "../../utils/variables";
+import { routeGroup } from "../../utils/variables";
+import authRouter from "./auth/auth.route";
 const v1Router = express.Router();
 
-v1Router.use(allRoutes.login, loginRouter);
+v1Router.use(routeGroup.auth, authRouter);
 
 export default v1Router;

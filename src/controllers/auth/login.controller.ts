@@ -9,6 +9,7 @@ import {
 import { ControllerType, UserDetailsResponseType } from "../../utils/types";
 import dotenv from "dotenv";
 import UserModel from "../../models/UserModel";
+import { defaultErrorMessage } from "../../utils/variables";
 dotenv.config();
 
 const { env } = process;
@@ -110,8 +111,7 @@ export const loginController: ControllerType = async (req, res) => {
       .status(500)
       .json(
         constructErrorResponseBody(
-          (error as MongoAPIError)?.message ??
-            "System Error! Unknown error occurred"
+          (error as MongoAPIError)?.message ?? defaultErrorMessage
         )
       );
   }

@@ -1,9 +1,9 @@
 export const routeGroup = {
     auth: "/auth"
   },
-  allRoutes = {
-    login: `${routeGroup.auth}/login`,
-    register: `${routeGroup.auth}/register`
+  allPaths = {
+    login: `/login`,
+    register: `/register`
   },
   databaseKeys = {
     users: "Users",
@@ -11,4 +11,5 @@ export const routeGroup = {
     orders: "Orders",
     products: "Products",
     payments: "Payments"
-  };
+  },
+  defaultErrorMessage = "System error! Couldn't determine error cause";

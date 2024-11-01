@@ -1,10 +1,12 @@
+import { ValidationError } from "joi";
 import {
   AllResponseType,
   AmountType,
   CartDetailsType,
   LinkType,
   ProductDetailsType,
-  ProductType
+  ProductType,
+  UserDetailsType
 } from "../utils/types";
 
 export const generateAmount = (inputtedAmount: number): AmountType => {
@@ -22,6 +24,17 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
         withCurrency,
         withoutCurrency
       }
+    };
+  },
+  createUser = (
+    email: string,
+    name: string,
+    password: string
+  ): UserDetailsType => {
+    return {
+      email,
+      name,
+      password
     };
   },
   createProduct = (
@@ -86,4 +99,19 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
       message,
       error
     };
+  },
+  formatJoiErrors = (error: ValidationError) => {
+    console.log(error);
+    if (
+      !error ||
+      !error.details ||
+      (error.details && !Array.isArray(error.details))
+    ) {
+      return undefined;
+    }
+
+    return error.details.reduce<{ [key: string]: string }>((acc, curr) => {
+      acc[curr?.context?.key || curr?.path?.join(".")] = curr.message;
+      return acc;
+    }, {});
   };
