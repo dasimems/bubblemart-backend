@@ -46,7 +46,7 @@ export const loginController: ControllerType = async (req, res) => {
     const user = await UserModel.findOne({ email });
     if (!user) {
       return res
-        .status(400)
+        .status(401)
         .json(constructErrorResponseBody("Wrong Credentials!"));
     }
     const {
@@ -64,7 +64,7 @@ export const loginController: ControllerType = async (req, res) => {
     );
     if (!isCorrectCredentials) {
       return res
-        .status(400)
+        .status(401)
         .json(constructErrorResponseBody("Wrong Credentials!"));
     }
     const token = encryptToken({
