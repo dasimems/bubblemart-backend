@@ -67,53 +67,75 @@ const updateProductController: ControllerType = async (req, res) => {
       .json(constructErrorResponseBody("Invalid fields detected", errors));
   }
 
-  let updatedData: UpdateProductBodyType = {};
-
-  const { name, description, image, quantity, amount } =
-    body as Partial<AddProductBodyType>;
-
-  if (name) {
-    updatedData = {
-      ...updatedData,
-      name
-    };
-  }
-  if (description) {
-    updatedData = {
-      ...updatedData,
-      description
-    };
-  }
-  if (image) {
-    updatedData = {
-      ...updatedData,
-      image
-    };
-  }
-  if (quantity) {
-    updatedData = {
-      ...updatedData,
-      quantity
-    };
-  }
-  if (amount) {
-    updatedData = {
-      ...updatedData,
-      amount
-    };
-  }
-
-  if (Object.keys(updatedData).length === 0) {
-    return res.status(200).json({ message: "No update made" });
-  }
-
   try {
-    const productDetails = await ProductSchema.findByIdAndUpdate(
+    const productDetails = await ProductSchema.findById(id);
+
+    if (!productDetails) {
+      return res
+        .status(404)
+        .json(constructErrorResponseBody("Product not found"));
+    }
+
+    let updatedData: UpdateProductBodyType = {};
+
+    const { name, description, image, quantity, amount } =
+      body as Partial<AddProductBodyType>;
+
+    if (name) {
+      updatedData = {
+        ...updatedData,
+        name
+      };
+    }
+    if (description) {
+      updatedData = {
+        ...updatedData,
+        description
+      };
+    }
+    if (image) {
+      updatedData = {
+        ...updatedData,
+        image
+      };
+    }
+    if (quantity) {
+      updatedData = {
+        ...updatedData,
+        quantity
+      };
+    }
+    if (amount) {
+      updatedData = {
+        ...updatedData,
+        amount
+      };
+    }
+
+    const updatedKeys = Object.keys(updatedData);
+
+    if (updatedKeys.length === 0) {
+      return res.status(200).json({ message: "No update made" });
+    }
+    const newProductDetails = await ProductSchema.findByIdAndUpdate(
       id,
-      updatedData,
+      {
+        ...updatedData,
+        lastUpdatedAt: new Date(),
+        $push: {
+          updates: {
+            $each: [
+              {
+                description: `Made an update to ${updatedKeys.join(", ")}`,
+                updatedAt: new Date()
+              }
+            ]
+          }
+        }
+      },
       { new: true }
     );
-    if (!productDetails) {
+    if (!newProductDetails) {
       return res
         .status(500)
         .json(
@@ -123,13 +145,13 @@ const updateProductController: ControllerType = async (req, res) => {
         );
     }
     const data: ProductDetailsResponseType = {
-      amount: productDetails.amount,
-      description: productDetails.description,
-      id: productDetails.id,
-      image: productDetails.image,
-      name: productDetails.name,
-      quantity: productDetails.quantity,
-      type: productDetails.type
+      amount: newProductDetails.amount,
+      description: newProductDetails.description,
+      id: newProductDetails.id,
+      image: newProductDetails.image,
+      name: newProductDetails.name,
+      quantity: newProductDetails.quantity,
+      type: newProductDetails.type
     };
     return res.send(201).json(constructSuccessResponseBody(data));
   } catch (error) {
