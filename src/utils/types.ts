@@ -86,7 +86,7 @@ export type UserDetailsType = {
 export type AuthenticationDestructuredType = {
   userTokenRole: Roles;
   userTokenId: string;
-  fetchedUserDetails: UserDetailsType;
+  fetchedUserDetails: UserDetailsType & { id: Schema.Types.ObjectId };
 };
 
 export type UserDetailsResponseType = {
