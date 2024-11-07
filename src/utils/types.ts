@@ -21,6 +21,11 @@ export type LinkType = {
 
 export type ProductType = "log" | "gift";
 
+export type CoordinateType = {
+  lng: number;
+  lat: number;
+};
+
 export type CurrencyDetailsType = {
   symbol: string;
   name: string;
@@ -53,6 +58,14 @@ export type ProductDetailsType = {
   amount: AmountType;
   image: string;
   description: string;
+};
+export type AddressDetailsType = {
+  address: string;
+  coordinates: CoordinateType;
+  createdAt?: Date;
+  userId: Schema.Types.ObjectId;
+  lastUpdatedAt?: Date;
+  updates: ChangesType[];
 };
 
 export type CartDetailsType = {
@@ -99,8 +112,13 @@ export type ProductDetailsResponseType = {
   ProductDetailsType,
   "createdAt" | "createdBy" | "lastUpdatedAt" | "updates"
 >;
+export type AddressDetailsResponseType = {
+  id: string;
+} & Omit<AddressDetailsType, "userId" | "lastUpdatedAt" | "updates">;
 
 export type AllResponseType =
   | UserDetailsResponseType
   | ProductDetailsResponseType[]
-  | ProductDetailsResponseType;
+  | ProductDetailsResponseType
+  | AddressDetailsResponseType
+  | AddressDetailsResponseType[];

@@ -1,6 +1,7 @@
 export const routeGroup = {
     auth: "/auth",
     product: "/product"
+    address: "/address"
   },
   allPaths = {
     login: `/login`,
@@ -11,7 +12,8 @@ export const routeGroup = {
     carts: "Carts",
     orders: "Orders",
     products: "Products",
-    payments: "Payments"
+    payments: "Payments",
+    address: "address"
   },
   cookieKeys = {
     auth: "auth"
