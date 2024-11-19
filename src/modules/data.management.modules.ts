@@ -20,6 +20,7 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
       withoutCurrency = new Intl.NumberFormat("en-US").format(formattedAmount);
     return {
       amount,
+      whole: inputtedAmount,
       currency: { name: "Naira", symbol: "NGN" },
       formatted: {
         withCurrency,
@@ -63,12 +64,17 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
   }),
   generateProductResponse = () => {},
   createCart = (
-    userId: string,
-    productId: string,
-    quantity: string
+    userId: Schema.Types.ObjectId,
+    quantity: number,
+    productDetails: {
+      id: Schema.Types.ObjectId;
+      image: string;
+      name: string;
+      amount: AmountType;
+    }
   ): CartDetailsType => ({
     userId,
-    productId,
+    productDetails,
     quantity,
     createdAt: new Date(),
     updates: []

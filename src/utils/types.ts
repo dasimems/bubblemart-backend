@@ -43,6 +43,7 @@ export type ChangesType = {
 
 export type AmountType = {
   amount: number;
+  whole: number;
   currency: CurrencyDetailsType;
   formatted: FormattedAmountDetailsType;
 };
@@ -69,12 +70,19 @@ export type AddressDetailsType = {
 };
 
 export type CartDetailsType = {
-  productId: string;
+  productDetails: {
+    id: Schema.Types.ObjectId;
+    image: string;
+    name: string;
+    amount: AmountType;
+  };
   createdAt: Date;
   lastUpdatedAt?: Date;
   updates: ChangesType[];
-  userId: string;
-  quantity: string;
+  userId: Schema.Types.ObjectId;
+  orderId: Schema.Types.ObjectId;
+  quantity: number;
+  paidAt?: Date;
 };
 
 export type JWTContentType = {
@@ -116,9 +124,20 @@ export type AddressDetailsResponseType = {
   id: string;
 } & Omit<AddressDetailsType, "userId" | "lastUpdatedAt" | "updates">;
 
+export type CartDetailsResponseType = {
+  id: string;
+  totalPrice: AmountType;
+  isAvailable?: boolean;
+} & Omit<
+  CartDetailsType,
+  "createdAt" | "lastUpdatedAt" | "updates" | "userId" | "paidAt" | "orderId"
+>;
+
 export type AllResponseType =
   | UserDetailsResponseType
   | ProductDetailsResponseType[]
   | ProductDetailsResponseType
   | AddressDetailsResponseType
-  | AddressDetailsResponseType[];
+  | AddressDetailsResponseType[]
+  | CartDetailsResponseType
+  | CartDetailsResponseType[];

@@ -1,6 +1,7 @@
 export const routeGroup = {
     auth: "/auth",
-    product: "/product"
+    product: "/product",
+    cart: "/cart",
     address: "/address"
   },
   allPaths = {
