@@ -2,7 +2,7 @@ export const routeGroup = {
     auth: "/auth",
     product: "/product",
     cart: "/cart",
-    address: "/address"
+    user: "/user"
   },
   allPaths = {
     login: `/login`,
