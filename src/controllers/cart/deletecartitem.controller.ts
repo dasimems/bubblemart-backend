@@ -1,16 +1,25 @@
-import { ControllerType } from "../../utils/types";
+import {
+  AuthenticationDestructuredType,
+  ControllerType
+} from "../../utils/types";
 import { constructErrorResponseBody } from "../../modules";
 import CartSchema from "../../models/CartModel";
 import { defaultErrorMessage } from "../../utils/variables";
 import { MongoError } from "mongodb";
 
 const deleteCartItemController: ControllerType = async (req, res) => {
-  const { params } = req;
+  const { body, params } = req;
+  const { fetchedUserDetails } = body as AuthenticationDestructuredType;
+  if (!fetchedUserDetails) {
+    return res.status(403).json(constructErrorResponseBody("Not allowed!"));
+  }
 
   const { id } = params || {};
 
   if (!id) {
-    return res.status(400).json(constructErrorResponseBody("ID is required!"));
+    return res
+      .status(400)
+      .json(constructErrorResponseBody("Cart ID is required!"));
   }
 
   try {
@@ -19,6 +28,10 @@ const deleteCartItemController: ControllerType = async (req, res) => {
       return res
         .status(404)
         .json(constructErrorResponseBody("Cart item not found!"));
+    }
+
+    if (cartDetails?.userId !== fetchedUserDetails?.id) {
+      return res.status(403).json(constructErrorResponseBody("Not allowed!"));
     }
 
     await CartSchema.findByIdAndDelete(id);
