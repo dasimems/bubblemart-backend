@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import mongoSanitize from "express-mongo-sanitize";
 import corsMiddleWare from "./middlewares/cors.middleware";
 import mongoose from "mongoose";
+import { createClient, RedisClientType } from "redis";
 
 dotenv.config();
 
@@ -14,6 +15,16 @@ export const app: Express = express();
 export const { env } = process;
 
 const uri = `mongodb+srv://${env.MONGO_DB_USERNAME}:${env.MONGO_DB_PASSWORD}@cluster0.mfkib.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+
+const redisClient = createClient();
+
+(async () => {
+  await redisClient
+    .on("error", (err) => console.log("Redis Client Error", err))
+    .connect();
+})();
+
+export { redisClient };
 
 export const connectDB = async () => {
   try {

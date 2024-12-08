@@ -2,6 +2,8 @@ export const routeGroup = {
     auth: "/auth",
     product: "/product",
     cart: "/cart",
+    address: "/address",
+    order: "/order",
     user: "/user"
   },
   allPaths = {
@@ -19,4 +21,5 @@ export const routeGroup = {
   cookieKeys = {
     auth: "auth"
   },
+  MAX_RETURN_ITEM_COUNT = 20,
   defaultErrorMessage = "System error! Couldn't determine error cause";

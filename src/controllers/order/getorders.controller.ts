@@ -1,27 +1,37 @@
 import { MongoError } from "mongodb";
-import ProductSchema from "../../models/ProductModel";
+import OrderSchema from "../../models/OrdersModel";
 import {
   constructErrorResponseBody,
   constructSuccessResponseBody,
+  generateAmount,
   getBaseUrl
 } from "../../modules";
-import { ControllerType, ProductDetailsResponseType } from "../../utils/types";
 import {
+  AuthenticationDestructuredType,
+  CartDetailsType,
+  ControllerType,
+  OrderDetailsResponseType
+} from "../../utils/types";
+import {
+  databaseKeys,
   defaultErrorMessage,
   MAX_RETURN_ITEM_COUNT
 } from "../../utils/variables";
+import { Document } from "mongoose";
 
-const getProductController: ControllerType = async (req, res) => {
-  const { query } = req;
+const getOrdersController: ControllerType = async (req, res) => {
+  const { body, query } = req;
+  const { fetchedUserDetails } = body as AuthenticationDestructuredType;
+  if (!fetchedUserDetails) {
+    return res.status(403).json(constructErrorResponseBody("Not allowed!"));
+  }
   let { page } = query;
-
   if (!page) {
     page = `1`;
   }
-
   try {
     const formattedPage = parseInt(page?.toString());
-    const totalProducts = await ProductSchema.countDocuments();
+    const totalProducts = await OrderSchema.countDocuments();
     const maxPage = Math.ceil(totalProducts / MAX_RETURN_ITEM_COUNT) || 1;
     const host = req.hostname || req.get("host") || "";
     const route = req.path;
@@ -31,28 +41,51 @@ const getProductController: ControllerType = async (req, res) => {
       return res.status(416).json(constructErrorResponseBody("Out of bound!"));
     }
     const skip = MAX_RETURN_ITEM_COUNT * (formattedPage - 1);
-    const fetchedProduct = await ProductSchema.find()
+    const orderList = await OrderSchema.find({
+      userId: fetchedUserDetails.id
+    })
+      .populate<CartDetailsType>({
+        path: "cartItems",
+        model: databaseKeys.carts,
+        select: "-__v",
+        options: {
+          strictPopulate: false // Ensures no errors if the product doesn't exist
+        }
+      })
       .skip(skip)
       .limit(MAX_RETURN_ITEM_COUNT)
       .exec();
+    const orders: OrderDetailsResponseType[] = orderList.map((order) => ({
+      id: order?.id,
+      orderNo: order?.orderNo,
+      paidAt: order?.paidAt,
+      paymentInitiatedAt: order?.paymentInitiatedAt,
+      paymentReference: order?.paymentReference,
+      refundedAt: order?.refundedAt,
+      cartItems: (
+        (order?.cartItems || []) as unknown as (Document<
+          string,
+          unknown,
+          CartDetailsType
+        > &
+          CartDetailsType)[]
+      )?.map((details) => ({
+        id: details.id,
+        productDetails: details.productDetails,
+        quantity: details.quantity,
+        totalPrice: generateAmount(
+          (details?.quantity || 0) *
+            (details?.productDetails?.amount?.whole || 0)
+        ),
+        isAvailable: false
+      }))
+    }));
 
-    const formattedProduct: ProductDetailsResponseType[] = fetchedProduct.map(
-      ({ name, type, quantity, amount, image, description, id }) => ({
-        name,
-        type,
-        quantity,
-        amount,
-        image,
-        description,
-        id
-      })
-    );
     const canShowPreviousLink = formattedPage > 1;
     const canShowNextLink = formattedPage < maxPage;
-
     res.status(200).json(
       constructSuccessResponseBody(
-        formattedProduct,
+        orders,
         totalProducts,
         maxPage,
         formattedPage,
@@ -87,4 +120,4 @@ const getProductController: ControllerType = async (req, res) => {
   }
 };
 
-export default getProductController;
+export default getOrdersController;

@@ -80,9 +80,22 @@ export type CartDetailsType = {
   lastUpdatedAt?: Date;
   updates: ChangesType[];
   userId: Schema.Types.ObjectId;
-  orderId: Schema.Types.ObjectId;
+  orderId?: Schema.Types.ObjectId;
   quantity: number;
   paidAt?: Date;
+};
+
+export type OrderDetailsType = {
+  cartItems: Schema.Types.ObjectId[];
+  userId: Schema.Types.ObjectId;
+  paidAt?: Date;
+  refundedAt?: Date;
+  createdAt?: Date;
+  paymentInitiatedAt?: Date;
+  lastUpdatedAt?: Date;
+  updates: ChangesType[];
+  orderNo?: string;
+  paymentReference?: string;
 };
 
 export type JWTContentType = {
@@ -131,6 +144,13 @@ export type CartDetailsResponseType = {
 } & Omit<
   CartDetailsType,
   "createdAt" | "lastUpdatedAt" | "updates" | "userId" | "paidAt" | "orderId"
+>;
+export type OrderDetailsResponseType = {
+  id: string;
+  cartItems: CartDetailsResponseType[];
+} & Omit<
+  OrderDetailsType,
+  "lastUpdatedAt" | "updates" | "userId" | "cartItems"
 >;
 
 export type AllResponseType =

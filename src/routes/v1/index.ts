@@ -5,6 +5,7 @@ import productRoute from "./product.route";
 import addressRoute from "./address.route";
 import { authenticationMiddleware } from "../../middlewares/authentication.middleware";
 import cartRoute from "./cart.route";
+import orderRoute from "./order.route";
 import userRoute from "./user.route";
 const v1Router = express.Router();
 
@@ -12,6 +13,7 @@ v1Router.use(routeGroup.auth, authRouter);
 v1Router.use(routeGroup.product, productRoute);
 v1Router.use(routeGroup.user, authenticationMiddleware, userRoute);
 v1Router.use(routeGroup.cart, authenticationMiddleware, cartRoute);
+v1Router.use(routeGroup.order, authenticationMiddleware, orderRoute);
 v1Router.use(routeGroup.address, authenticationMiddleware, addressRoute);
 
 export default v1Router;

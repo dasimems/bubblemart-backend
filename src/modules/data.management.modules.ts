@@ -1,14 +1,19 @@
 import { ValidationError } from "joi";
+import crypto from "crypto";
 import {
-  AllResponseType,
   AmountType,
   CartDetailsType,
   LinkType,
+  OrderDetailsType,
   ProductDetailsType,
   ProductType,
   UserDetailsType
 } from "../utils/types";
 import { Schema } from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
+
+const { env } = process;
 
 export const generateAmount = (inputtedAmount: number): AmountType => {
     const amount = inputtedAmount * 1000,
@@ -43,6 +48,14 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
       updates: []
     };
   },
+  createOrder = (
+    cartItems: Schema.Types.ObjectId[],
+    userId: Schema.Types.ObjectId
+  ): OrderDetailsType => ({
+    cartItems,
+    userId,
+    updates: []
+  }),
   createProduct = (
     name: string,
     type: ProductType,
@@ -79,8 +92,8 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
     createdAt: new Date(),
     updates: []
   }),
-  constructSuccessResponseBody = (
-    data: AllResponseType,
+  constructSuccessResponseBody = <T>(
+    data: T,
     total?: number,
     pageNum?: number,
     activePage?: number,
@@ -88,7 +101,7 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
     nextLink?: LinkType
   ) => {
     let dataToReturn: {
-      data: AllResponseType;
+      data: T;
       total?: number;
       pageNum?: number;
       activePage?: number;
@@ -152,4 +165,53 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
       acc[curr?.context?.key || curr?.path?.join(".")] = curr.message;
       return acc;
     }, {});
+  },
+  encryptData = (data: string, encryptionKey: string) => {
+    const iv = crypto.randomBytes(16); // Initialization vector
+    const cipher = crypto.createCipheriv("aes-256-cbc", encryptionKey, iv);
+    let encrypted = cipher.update(data, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    return iv.toString("hex") + ":" + encrypted; // Return IV + Encrypted data
+  },
+  decryptData = (encryptedData: string, encryptionKey: string) => {
+    try {
+      const [ivHex, encryptedText] = encryptedData.split(":");
+      if (!ivHex || !encryptedText) {
+        throw new Error("Invalid decryption!");
+      }
+      const iv = Buffer.from(ivHex, "hex");
+
+      if (iv.length !== 16) {
+        throw new Error("Invalid decryption!");
+      }
+      if (encryptionKey.length !== 32) {
+        throw new Error("Invalid decryption!");
+      }
+      const decipher = crypto.createDecipheriv(
+        "aes-256-cbc",
+        encryptionKey,
+        iv
+      );
+      let decrypted = decipher.update(encryptedText, "hex", "utf8");
+      decrypted += decipher.final("utf8");
+      return decrypted;
+    } catch {
+      throw new Error("Invalid decryption!");
+    }
+  },
+  hashDataWithSalt = (data: string, salt: string) => {
+    const hash = crypto.createHash("sha256");
+    hash.update(data + salt);
+    return hash.digest("hex");
+  },
+  verifySaltedHash = (data: string, salt: string, originalHash: string) => {
+    const hashedData = hashDataWithSalt(data, salt);
+    return hashedData === originalHash;
+  },
+  getOrderEncryptKey = (orderId: string, userId: string, time: number) => {
+    const encryptionKey = Buffer.from(
+      (env.ORDER_ENCRYPTION_KEY + "k".repeat(16)).slice(0, 16),
+      "utf8"
+    );
+    return `${orderId}-<${encryptionKey}>-${userId}-<${encryptionKey}>-${time}`;
   };
