@@ -13,14 +13,22 @@ const { ENVIRONMENT } = env || {};
 const logoutController: ControllerType = (req, res) => {
   const { body } = req;
   const { fetchedUserDetails } = body as AuthenticationDestructuredType;
-  if (!fetchedUserDetails) {
-    return res.status(403).json(constructErrorResponseBody("Not allowed!"));
+
+  try {
+    if (!fetchedUserDetails) {
+      return res.status(403).json(constructErrorResponseBody("Not allowed!"));
+    }
+    return res
+      .clearCookie(cookieKeys.auth, {
+        secure: ENVIRONMENT?.toLowerCase() === "production"
+      })
+      .status(200)
+      .json({ message: "Logged out successfully" });
+  } catch (error) {
+    return res.status(500).json({
+      message: "System error!"
+    });
   }
-  return res
-    .clearCookie(cookieKeys.auth, {
-      secure: ENVIRONMENT?.toLowerCase() === "production"
-    })
-    .status(204);
 };
 
 export default logoutController;

@@ -8,7 +8,8 @@ export const routeGroup = {
   },
   allPaths = {
     login: `/login`,
-    register: `/register`
+    register: `/register`,
+    logout: "/logout"
   },
   databaseKeys = {
     users: "Users",

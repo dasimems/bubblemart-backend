@@ -7,7 +7,7 @@ import cookieParser from "cookie-parser";
 import mongoSanitize from "express-mongo-sanitize";
 import corsMiddleWare from "./middlewares/cors.middleware";
 import mongoose from "mongoose";
-import { createClient, RedisClientType } from "redis";
+import { createClient } from "redis";
 
 dotenv.config();
 
