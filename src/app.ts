@@ -14,9 +14,11 @@ dotenv.config();
 export const app: Express = express();
 export const { env } = process;
 
-const uri = `mongodb+srv://${env.MONGO_DB_USERNAME}:${env.MONGO_DB_PASSWORD}@cluster0.mfkib.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = `mongodb+srv://${env?.MONGO_DB_USERNAME}:${env?.MONGO_DB_PASSWORD}@cluster0.mfkib.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
-const redisClient = createClient();
+const redisClient = createClient(
+  {url: env?.REDIS_URL}
+);
 
 (async () => {
   await redisClient

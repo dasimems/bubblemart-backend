@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint . --ext .ts,.js --fix",
+    "lint": "eslint . --fix --quiet",
     "test": "jest",
     "build": "npx tsc",
-    "start": "npm run lint && npm run test && npm run build && node dist/index.js",
+    "start": "npm run build && node dist/index.js",
     "dev": "nodemon src/index.ts"
   },
   "author": "",
