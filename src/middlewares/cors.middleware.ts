@@ -6,7 +6,7 @@ import { MiddleWareType } from "../utils/types";
 dotenv.config();
 const { env } = process;
 
-const originList = env.CLIENT_URL_LIST || "";
+const originList = env?.CLIENT_URL_LIST || "";
 const allowedOrigins: string[] = originList.split(",");
 
 const corsOptions: CorsOptions = {
