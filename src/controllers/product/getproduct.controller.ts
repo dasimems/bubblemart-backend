@@ -5,7 +5,11 @@ import {
   constructSuccessResponseBody,
   getBaseUrl
 } from "../../modules";
-import { ControllerType, ProductDetailsResponseType } from "../../utils/types";
+import {
+  ControllerType,
+  ProductDetailsResponseType,
+  ProductType
+} from "../../utils/types";
 import {
   defaultErrorMessage,
   MAX_RETURN_ITEM_COUNT
@@ -13,10 +17,14 @@ import {
 
 const getProductController: ControllerType = async (req, res) => {
   const { query } = req;
-  let { page } = query;
+  let { page, type } = query;
 
   if (!page) {
     page = `1`;
+  }
+
+  if ((type as ProductType) !== "log" || (type as ProductType) !== "gift") {
+    type = undefined;
   }
 
   try {
@@ -31,7 +39,9 @@ const getProductController: ControllerType = async (req, res) => {
       return res.status(416).json(constructErrorResponseBody("Out of bound!"));
     }
     const skip = MAX_RETURN_ITEM_COUNT * (formattedPage - 1);
-    const fetchedProduct = await ProductSchema.find()
+    const fetchedProduct = await ProductSchema.find({
+      type
+    })
       .skip(skip)
       .limit(MAX_RETURN_ITEM_COUNT)
       .exec();
@@ -77,7 +87,6 @@ const getProductController: ControllerType = async (req, res) => {
       )
     );
   } catch (error) {
-    console.log(error);
     return res
       .status(500)
       .json(
