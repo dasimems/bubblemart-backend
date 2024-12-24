@@ -34,7 +34,7 @@ const corsOptionsDelegate = (
 const corsMiddleWare: MiddleWareType = (req, res, next) => {
   cors(corsOptionsDelegate)(req, res, (err) => {
     if (err) {
-      return res.status(403).json({ message: "CORS policy: Access denied." });
+      return res.status(403).json({ message: "Access denied." });
     }
     next();
   });
