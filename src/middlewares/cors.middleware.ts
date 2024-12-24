@@ -18,7 +18,8 @@ const corsOptionsDelegate = (
   req: Request,
   callback: (err: Error | null, options?: CorsOptions) => void
 ): void => {
-  const origin = `https://${req.headers.host}`;
+  // const origin = `https://${req.headers.origin}`;
+  const { origin } = req?.headers || {};
   console.log(origin);
   if (origin && allowedOrigins.includes(origin)) {
     callback(null, { origin: true, ...corsOptions }); // Allow the origin
