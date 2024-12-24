@@ -17,7 +17,7 @@ import {
 
 const getProductController: ControllerType = async (req, res) => {
   const { query } = req;
-  let { page, type } = query;
+  let { page, type, max } = query;
 
   if (!page) {
     page = `1`;
@@ -27,10 +27,14 @@ const getProductController: ControllerType = async (req, res) => {
     type = undefined;
   }
 
+  if (!max || isNaN(parseInt(max?.toString()))) {
+    max = MAX_RETURN_ITEM_COUNT?.toString();
+  }
+
   try {
     const formattedPage = parseInt(page?.toString());
     const totalProducts = await ProductSchema.countDocuments();
-    const maxPage = Math.ceil(totalProducts / MAX_RETURN_ITEM_COUNT) || 1;
+    const maxPage = Math.ceil(totalProducts / parseInt(max?.toString())) || 1;
     const host = req.hostname || req.get("host") || "";
     const route = req.path;
     const link = `${req.protocol}://${host}${req.originalUrl}`;
@@ -38,12 +42,12 @@ const getProductController: ControllerType = async (req, res) => {
     if (isNaN(formattedPage) || formattedPage > maxPage) {
       return res.status(416).json(constructErrorResponseBody("Out of bound!"));
     }
-    const skip = MAX_RETURN_ITEM_COUNT * (formattedPage - 1);
+    const skip = parseInt(max?.toString()) * (formattedPage - 1);
     const fetchedProduct = await ProductSchema.find({
       type
     })
       .skip(skip)
-      .limit(MAX_RETURN_ITEM_COUNT)
+      .limit(parseInt(max?.toString()))
       .exec();
 
     const formattedProduct: ProductDetailsResponseType[] = fetchedProduct.map(
