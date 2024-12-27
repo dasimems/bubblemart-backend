@@ -112,7 +112,9 @@ const addToCartController: ControllerType = async (req, res) => {
         id: productDetails?.id,
         name: productDetails?.name,
         image: productDetails?.image,
-        amount: productDetails?.amount
+        amount: productDetails?.amount,
+        description: productDetails?.description,
+        type: productDetails?.type
       }
     });
 

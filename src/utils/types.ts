@@ -69,13 +69,17 @@ export type AddressDetailsType = {
   updates: ChangesType[];
 };
 
+export type CartProductDetails = {
+  id: Schema.Types.ObjectId;
+  image: string;
+  name: string;
+  amount: AmountType;
+  type: ProductType;
+  description: string;
+};
+
 export type CartDetailsType = {
-  productDetails: {
-    id: Schema.Types.ObjectId;
-    image: string;
-    name: string;
-    amount: AmountType;
-  };
+  productDetails: CartProductDetails;
   createdAt: Date;
   lastUpdatedAt?: Date;
   updates: ChangesType[];

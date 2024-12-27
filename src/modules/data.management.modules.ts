@@ -3,6 +3,7 @@ import crypto from "crypto";
 import {
   AmountType,
   CartDetailsType,
+  CartProductDetails,
   LinkType,
   OrderDetailsType,
   ProductDetailsType,
@@ -79,12 +80,7 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
   createCart = (
     userId: Schema.Types.ObjectId,
     quantity: number,
-    productDetails: {
-      id: Schema.Types.ObjectId;
-      image: string;
-      name: string;
-      amount: AmountType;
-    }
+    productDetails: CartProductDetails
   ): CartDetailsType => ({
     userId,
     productDetails,

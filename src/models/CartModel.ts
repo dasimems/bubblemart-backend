@@ -25,6 +25,14 @@ const cartSchema = new Schema<CartDetailsType>({
       type: String,
       required: true
     },
+    description: {
+      type: String,
+      required: true
+    },
+    type: {
+      type: String,
+      required: true
+    },
     amount: {
       amount: { type: Number, required: true },
       currency: {
