@@ -21,15 +21,15 @@ export default [
       ],
       "no-use-before-define": "error",
       "use-isnan": "error",
-      camelcase: [
-        "error",
-        {
-          properties: "always", // Enforce camelcase for object properties
-          ignoreDestructuring: true, // Ignore destructuring, as it's common for imports
-          ignoreImports: true, // Allow camelCase for imports (useful for TypeScript types)
-          ignoreGlobals: false // You can decide whether to allow camelCase for global variables
-        }
-      ],
+      // camelcase: [
+      //   "error",
+      //   {
+      //     properties: "always", // Enforce camelcase for object properties
+      //     ignoreDestructuring: true, // Ignore destructuring, as it's common for imports
+      //     ignoreImports: true, // Allow camelCase for imports (useful for TypeScript types)
+      //     ignoreGlobals: false // You can decide whether to allow camelCase for global variables
+      //   }
+      // ],
       curly: "error",
       "default-case": "error",
       "default-case-last": "error",

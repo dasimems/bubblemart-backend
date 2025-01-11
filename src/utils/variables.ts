@@ -4,7 +4,8 @@ export const routeGroup = {
     cart: "/cart",
     address: "/address",
     order: "/order",
-    user: "/user"
+    user: "/user",
+    upload: "/upload"
   },
   allPaths = {
     login: `/login`,
@@ -17,7 +18,8 @@ export const routeGroup = {
     orders: "Orders",
     products: "Products",
     payments: "Payments",
-    address: "address"
+    address: "Address",
+    log: "Log"
   },
   cookieKeys = {
     auth: "auth"

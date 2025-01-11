@@ -48,6 +48,19 @@ export type AmountType = {
   formatted: FormattedAmountDetailsType;
 };
 
+export type LogType = {
+  email: string;
+  password: string;
+};
+
+export type LogDetailsType = {
+  createdAt?: Date;
+  createdBy: Schema.Types.ObjectId;
+  lastUpdatedAt?: Date;
+  productId: Schema.Types.ObjectId;
+  updates: ChangesType[];
+} & LogType;
+
 export type ProductDetailsType = {
   name: string;
   type: ProductType;
@@ -99,6 +112,7 @@ export type OrderDetailsType = {
   lastUpdatedAt?: Date;
   updates: ChangesType[];
   orderNo?: string;
+  addressId?: Schema.Types.ObjectId;
   paymentReference?: string;
 };
 
@@ -131,8 +145,16 @@ export type UserDetailsResponseType = {
   id: string;
 } & Omit<UserDetailsType, "password" | "updates">;
 
+export type LogDetailsResponseType = {
+  id: string;
+} & Omit<
+  LogDetailsType,
+  "createdAt" | "createdBy" | "lastUpdatedAt" | "productId" | "updates"
+>;
+
 export type ProductDetailsResponseType = {
   id: string;
+  logs?: LogDetailsResponseType[];
 } & Omit<
   ProductDetailsType,
   "createdAt" | "createdBy" | "lastUpdatedAt" | "updates"
@@ -149,6 +171,10 @@ export type CartDetailsResponseType = {
   CartDetailsType,
   "createdAt" | "lastUpdatedAt" | "updates" | "userId" | "paidAt" | "orderId"
 >;
+export type CartResponseType = {
+  carts: CartDetailsResponseType[];
+  isAddressNeeded: boolean;
+};
 export type OrderDetailsResponseType = {
   id: string;
   cartItems: CartDetailsResponseType[];

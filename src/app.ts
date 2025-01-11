@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import express, { Express } from "express";
+import express, { Express, NextFunction, Request, Response } from "express";
 import bodyParser from "body-parser";
 import routes from "./routes";
 import helmet from "helmet";
@@ -8,6 +8,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import corsMiddleWare from "./middlewares/cors.middleware";
 import mongoose from "mongoose";
 import { createClient } from "redis";
+import multer from "multer";
 
 dotenv.config();
 
@@ -49,3 +50,12 @@ app.get("/", (_req, res) => {
 });
 
 app.use(routes);
+// app.use(((err: any, _: Request, res: Response, next: NextFunction) => {
+//   if (err instanceof multer.MulterError) {
+//     return res.status(400).json({ error: err.message });
+//   }
+//   if (err) {
+//     return res.status(500).json({ error: err.message });
+//   }
+//   next();
+// }) as any);

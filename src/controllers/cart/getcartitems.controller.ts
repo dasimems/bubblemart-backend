@@ -6,7 +6,7 @@ import {
 } from "../../modules";
 import {
   AuthenticationDestructuredType,
-  CartDetailsResponseType,
+  CartResponseType,
   ControllerType,
   ProductDetailsResponseType,
   ProductDetailsType
@@ -23,7 +23,7 @@ const getCartItemsController: ControllerType = async (req, res) => {
   }
 
   try {
-    const cartDetails = await CartSchema.find({
+    const fetchCartPromise = CartSchema.find({
       userId: fetchedUserDetails.id,
       $or: [{ orderId: { $exists: false } }, { orderId: null }]
     }).populate<ProductDetailsType>({
@@ -34,6 +34,15 @@ const getCartItemsController: ControllerType = async (req, res) => {
         strictPopulate: false // Ensures no errors if the product doesn't exist
       }
     });
+    const availableGiftCountPromise = CartSchema.countDocuments({
+      userId: fetchedUserDetails.id,
+      $or: [{ orderId: { $exists: false } }, { orderId: null }],
+      "productDetails.type": "gift" // Check if order is not null
+    });
+    const [cartDetails, availableGiftCount] = await Promise.all([
+      fetchCartPromise,
+      availableGiftCountPromise
+    ]);
 
     const cartItemsWithValidProduct = cartDetails?.filter(
       (details) => !!details?.productDetails?.id
@@ -48,22 +57,23 @@ const getCartItemsController: ControllerType = async (req, res) => {
       )
     );
 
-    const data: CartDetailsResponseType[] = cartItemsWithValidProduct?.map(
-      (details) => ({
-        id: details?.id,
-        productDetails: {
-          ...details?.productDetails,
-          id: (
-            details?.productDetails?.id as unknown as ProductDetailsResponseType
-          )?.id as unknown as Schema.Types.ObjectId
-        },
-        quantity: details?.quantity,
-        totalPrice: generateAmount(
-          (details?.quantity || 0) *
-            (details?.productDetails?.amount?.whole || 0)
-        )
-      })
-    );
+    const carts = cartItemsWithValidProduct?.map((details) => ({
+      id: details?.id,
+      productDetails: {
+        ...details?.productDetails,
+        id: (
+          details?.productDetails?.id as unknown as ProductDetailsResponseType
+        )?.id as unknown as Schema.Types.ObjectId
+      },
+      quantity: details?.quantity,
+      totalPrice: generateAmount(
+        (details?.quantity || 0) * (details?.productDetails?.amount?.whole || 0)
+      )
+    }));
+    const data: CartResponseType = {
+      carts,
+      isAddressNeeded: availableGiftCount > 0
+    };
     return res.status(200).json(constructSuccessResponseBody(data));
   } catch (error) {
     return res

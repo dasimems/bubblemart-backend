@@ -17,7 +17,11 @@ export const imageUpload = (limit: number = 2000000) =>
     },
     fileFilter(_, file, cb) {
       if (!file.originalname.match(/\.(png|jpg)$/)) {
-        return cb(new Error("Please upload a JPG or PNG Image"));
+        return cb(
+          new Error(
+            JSON.stringify({ message: "Please upload a JPG or PNG Image" })
+          )
+        );
       }
       cb(null, true);
     }

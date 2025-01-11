@@ -4,7 +4,8 @@ import {
   AuthenticationDestructuredType,
   ControllerType
 } from "../../utils/types";
-import { cookieKeys } from "../../utils/variables";
+import { cookieKeys, defaultErrorMessage } from "../../utils/variables";
+import { MongoError } from "mongodb";
 dotenv.config();
 
 const { env } = process;
@@ -25,9 +26,13 @@ const logoutController: ControllerType = (req, res) => {
       .status(200)
       .json({ message: "Logged out successfully" });
   } catch (error) {
-    return res.status(500).json({
-      message: "System error!"
-    });
+    return res
+      .status(500)
+      .json(
+        constructErrorResponseBody(
+          (error as MongoError)?.message || defaultErrorMessage
+        )
+      );
   }
 };
 

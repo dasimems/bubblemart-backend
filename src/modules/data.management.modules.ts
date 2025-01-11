@@ -51,11 +51,13 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
   },
   createOrder = (
     cartItems: Schema.Types.ObjectId[],
-    userId: Schema.Types.ObjectId
+    userId: Schema.Types.ObjectId,
+    addressId?: Schema.Types.ObjectId
   ): OrderDetailsType => ({
     cartItems,
     userId,
-    updates: []
+    updates: [],
+    addressId
   }),
   createProduct = (
     name: string,

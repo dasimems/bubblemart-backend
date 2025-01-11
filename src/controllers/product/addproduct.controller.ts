@@ -2,6 +2,7 @@ import Joi, { ValidationError } from "joi";
 import {
   AuthenticationDestructuredType,
   ControllerType,
+  LogType,
   ProductDetailsResponseType,
   ProductType
 } from "../../utils/types";
@@ -14,6 +15,7 @@ import {
 import { MongoError } from "mongodb";
 import { defaultErrorMessage } from "../../utils/variables";
 import ProductSchema from "../../models/ProductModel";
+import LogSchema from "../../models/LogsModel";
 
 export type AddProductBodyType = {
   name: string;
@@ -22,12 +24,24 @@ export type AddProductBodyType = {
   amount: number;
   image: string;
   description: string;
+  logs: LogType[];
 } & Partial<AuthenticationDestructuredType>;
+
+const logBodySchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.empty": "Email is required",
+    "any.required": "Email is required"
+  }), // Validate email format
+  password: Joi.string().min(6).required().messages({
+    "string.empty": "Password is required",
+    "any.required": "Password is required"
+  }) // Validate password (minimum 6 characters)
+});
 
 const addProductBodySchema = Joi.object<AddProductBodyType>({
   name: Joi.string().required().messages({
-    "string.empty": "Email is required",
-    "any.required": "Email is required"
+    "string.empty": "Name is required",
+    "any.required": "Name is required"
   }),
   quantity: Joi.number().greater(0).required().messages({
     "any.required": "The quantity field is required",
@@ -56,6 +70,14 @@ const addProductBodySchema = Joi.object<AddProductBodyType>({
     "string.empty": "Description is required",
     "any.required": "Description is required",
     "string.max": "The description must not be greater than 500 characters"
+  }),
+  logs: Joi.array().when("type", {
+    is: "log", // Only validate this when productType is 'log'
+    then: Joi.array().min(1).items(logBodySchema).messages({
+      "array.min":
+        'At least one log is required when the product type is "log".'
+    }), // Array should have at least one user object
+    otherwise: Joi.array().empty() // If productType is not 'log', users can be an empty array
   })
 });
 
@@ -79,7 +101,7 @@ const addProductController: ControllerType = async (req, res) => {
   }
 
   try {
-    const { name, type, description, image, quantity, amount } =
+    const { name, type, description, image, quantity, amount, logs } =
       body as AddProductBodyType;
     const productDetails = await ProductSchema.create(
       createProduct(
@@ -92,6 +114,7 @@ const addProductController: ControllerType = async (req, res) => {
         fetchedUserDetails.id
       )
     );
+
     if (!productDetails) {
       return res
         .status(500)
@@ -101,7 +124,19 @@ const addProductController: ControllerType = async (req, res) => {
           )
         );
     }
-    const data: ProductDetailsResponseType = {
+
+    const logsDetailsList = await Promise.all(
+      (logs || []).map(({ email, password }) =>
+        LogSchema.create({
+          email,
+          password,
+          createdBy: fetchedUserDetails?.id || "",
+          productId: productDetails?.id
+        })
+      )
+    );
+
+    let data: ProductDetailsResponseType = {
       amount: productDetails.amount,
       description: productDetails.description,
       id: productDetails.id,
@@ -110,6 +145,16 @@ const addProductController: ControllerType = async (req, res) => {
       quantity: productDetails.quantity,
       type: productDetails.type
     };
+    if (type === "log") {
+      data = {
+        ...data,
+        logs: logsDetailsList.map(({ id, email, password }) => ({
+          email,
+          password,
+          id
+        }))
+      };
+    }
     return res.send(201).json(constructSuccessResponseBody(data));
   } catch (error) {
     return res
