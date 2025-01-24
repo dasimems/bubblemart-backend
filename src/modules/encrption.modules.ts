@@ -31,9 +31,10 @@ export const encryptToken = (body: JWTContentType) => {
     ) as JWTContentType;
     return decryptedContent;
   },
+  generatePassword = (password: string) => `${password}~${env?.PASSWORD_SALT}`,
   hashPassword = async (password: string) => {
-    return await bcrypt.hash(password, saltRounds);
+    return await bcrypt.hash(generatePassword(password), saltRounds);
   },
   compareHashedPassword = async (password: string, hashedPassword: string) => {
-    return await bcrypt.compare(password, hashedPassword);
+    return await bcrypt.compare(generatePassword(password), hashedPassword);
   };
