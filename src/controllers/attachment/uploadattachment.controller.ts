@@ -20,6 +20,8 @@ const uploadAttachmentController: ControllerType = async (req, res) => {
   }
 
   if (fetchedUserDetails?.role !== "ADMIN") {
+    console.log(userDetails);
+    console.log(userDetails?.role);
     return res.status(403).json(constructErrorResponseBody("Not allowed!"));
   }
   const fileToUpload = req.file;
