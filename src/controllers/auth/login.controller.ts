@@ -73,7 +73,7 @@ export const loginController: ControllerType = async (req, res) => {
       createdAt: new Date(),
       expiredAt: calculateTokenExpirationDate(),
       id: id,
-      role: "USER"
+      role: role || "USER"
     });
 
     if (!token) {

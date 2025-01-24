@@ -10,25 +10,27 @@ import {
   ControllerType
 } from "../../utils/types";
 import { defaultErrorMessage } from "../../utils/variables";
+import { removeFile } from "../../modules/file.management.modules";
 
 const uploadAttachmentController: ControllerType = async (req, res) => {
   const { body } = req;
 
-  const { fetchedUserDetails } = body as AuthenticationDestructuredType;
-  if (!fetchedUserDetails) {
-    return res.status(403).json(constructErrorResponseBody("Not allowed!"));
-  }
-
-  if (fetchedUserDetails?.role !== "ADMIN") {
-    console.log(fetchedUserDetails);
-    console.log(fetchedUserDetails?.role);
-    return res.status(403).json(constructErrorResponseBody("Not allowed!"));
-  }
   const fileToUpload = req.file;
   if (!fileToUpload) {
     return res.status(400).json(constructErrorResponseBody("No file sent"));
   }
   const { path } = fileToUpload;
+
+  const { fetchedUserDetails } = body as AuthenticationDestructuredType;
+  if (!fetchedUserDetails) {
+    removeFile(path);
+    return res.status(403).json(constructErrorResponseBody("Not allowed!"));
+  }
+
+  if (fetchedUserDetails?.role !== "ADMIN") {
+    removeFile(path);
+    return res.status(403).json(constructErrorResponseBody("Not allowed!"));
+  }
   try {
     const [fname] = fileToUpload?.originalname?.split(".")[0]?.split(" ") || [];
     const fileName = `${fetchedUserDetails?.id}-${Date.now()}-${fname}`;
