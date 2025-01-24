@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import express, { Express, NextFunction, Request, Response } from "express";
+import express, { Express } from "express";
 import bodyParser from "body-parser";
 import routes from "./routes";
 import helmet from "helmet";
@@ -8,14 +8,13 @@ import mongoSanitize from "express-mongo-sanitize";
 import corsMiddleWare from "./middlewares/cors.middleware";
 import mongoose from "mongoose";
 import { createClient } from "redis";
-import multer from "multer";
 
 dotenv.config();
 
 export const app: Express = express();
 export const { env } = process;
 
-const uri = `mongodb+srv://${env?.MONGO_DB_USERNAME}:${env?.MONGO_DB_PASSWORD}@${env?.MONGO_CLUSTER_STRING}.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = `mongodb+srv://${env?.MONGO_DB_USERNAME}:${env?.MONGO_DB_PASSWORD}@${env?.MONGO_CLUSTER_STRING}.mongodb.net/?retryWrites=true&w=majority&appName=${env?.MONGO_DB_APPNAME}`;
 
 const redisClient = createClient({ url: env?.REDIS_URL });
 
