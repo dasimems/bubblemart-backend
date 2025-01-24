@@ -42,7 +42,7 @@ const schema = Joi.object<RegisterBodyType>({
     "any.required": "Please repeat your password",
     "any.only": "Your repeated password doesn't match"
   })
-});
+}).unknown(true);
 
 export const registerController: ControllerType = async (req, res) => {
   const { body } = req;

@@ -24,7 +24,7 @@ export type CreateOrderBodyType = {
 
 const createOrderBodySchema = Joi.object<CreateOrderBodyType>({
   address: Joi.string().optional()
-});
+}).unknown(true);
 
 const createOrderController: ControllerType = async (req, res) => {
   const { body } = req;

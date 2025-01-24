@@ -36,7 +36,7 @@ export const addressBodySchema = Joi.object<AddressBodyType>({
     "number.min": "Please provide a valid latitude",
     "number.max": "Please provide a valid latitude"
   })
-});
+}).unknown(true);
 
 const createAddressController: ControllerType = async (req, res) => {
   const { body } = req;

@@ -79,7 +79,7 @@ const addProductBodySchema = Joi.object<AddProductBodyType>({
     }), // Array should have at least one user object
     otherwise: Joi.array().empty() // If productType is not 'log', users can be an empty array
   })
-});
+}).unknown(true);
 
 const addProductController: ControllerType = async (req, res) => {
   const { body } = req;

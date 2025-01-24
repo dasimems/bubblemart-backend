@@ -38,7 +38,7 @@ const addProductBodySchema = Joi.object<UpdateProductBodyType>({
     "any.required": "Description is required",
     "string.max": "The description must not be greater than 500 characters"
   })
-});
+}).unknown(true);
 
 const updateProductController: ControllerType = async (req, res) => {
   const { body, params } = req;

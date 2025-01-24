@@ -21,7 +21,7 @@ export const addToCartSchema = Joi.object<AddToCartBodyType>({
     "number.base": "Expected input is a number",
     "any.required": "Please provide your quantity"
   })
-});
+}).unknown(true);
 
 const subtractFromCartController: ControllerType = async (req, res) => {
   const { body } = req;

@@ -26,7 +26,7 @@ const schema = Joi.object<DeleteUserBodyType>({
     "any.required": "Password is needed to perform this operation",
     "string.empty": "Your password is needed to perform this operation"
   })
-});
+}).unknown(true);
 
 const deleteUserController: ControllerType = async (req, res) => {
   const { body } = req;
