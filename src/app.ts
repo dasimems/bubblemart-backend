@@ -14,7 +14,6 @@ dotenv.config();
 
 export const app: Express = express();
 export const { env } = process;
-console.log(env?.CLIENT_URL_LIST);
 
 const uri = `mongodb+srv://${env?.MONGO_DB_USERNAME}:${env?.MONGO_DB_PASSWORD}@${env?.MONGO_CLUSTER_STRING}.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
