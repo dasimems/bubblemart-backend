@@ -155,7 +155,7 @@ const addProductController: ControllerType = async (req, res) => {
         }))
       };
     }
-    return res.send(201).json(constructSuccessResponseBody(data));
+    return res.status(201).json(constructSuccessResponseBody(data));
   } catch (error) {
     return res
       .status(500)

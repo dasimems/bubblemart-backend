@@ -153,7 +153,7 @@ const updateProductController: ControllerType = async (req, res) => {
       quantity: newProductDetails.quantity,
       type: newProductDetails.type
     };
-    return res.send(201).json(constructSuccessResponseBody(data));
+    return res.status(200).json(constructSuccessResponseBody(data));
   } catch (error) {
     return res
       .status(500)
