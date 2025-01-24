@@ -33,7 +33,9 @@ const getProductController: ControllerType = async (req, res) => {
 
   try {
     const formattedPage = parseInt(page?.toString());
-    const totalProducts = await ProductSchema.countDocuments({ type });
+    const totalProducts = await ProductSchema.countDocuments(
+      type ? { type } : { $or: [{ type: "log" }, { type: "gift" }] }
+    );
     const maxPage = Math.ceil(totalProducts / parseInt(max?.toString())) || 1;
     const host = req.hostname || req.get("host") || "";
     const route = req.path;
@@ -43,9 +45,9 @@ const getProductController: ControllerType = async (req, res) => {
       return res.status(416).json(constructErrorResponseBody("Out of bound!"));
     }
     const skip = parseInt(max?.toString()) * (formattedPage - 1);
-    const fetchedProduct = await ProductSchema.find({
-      type
-    })
+    const fetchedProduct = await ProductSchema.find(
+      type ? { type } : { $or: [{ type: "log" }, { type: "gift" }] }
+    )
       .skip(skip)
       .limit(parseInt(max?.toString()))
       .exec();
