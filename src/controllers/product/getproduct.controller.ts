@@ -33,7 +33,7 @@ const getProductController: ControllerType = async (req, res) => {
 
   try {
     const formattedPage = parseInt(page?.toString());
-    const totalProducts = await ProductSchema.countDocuments();
+    const totalProducts = await ProductSchema.countDocuments({ type });
     const maxPage = Math.ceil(totalProducts / parseInt(max?.toString())) || 1;
     const host = req.hostname || req.get("host") || "";
     const route = req.path;
