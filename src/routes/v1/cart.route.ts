@@ -13,10 +13,8 @@ cartRoute
   .delete(clearCartController)
   .post(addToCartController)
   .get(getCartItemsController)
-  .patch(subtractFromCartController);
-cartRoute
-  .route("/:id")
-  .delete(deleteCartItemController)
-  .post(updateCartController);
+  .patch(subtractFromCartController)
+  .put(updateCartController);
+cartRoute.route("/:id").delete(deleteCartItemController);
 
 export default cartRoute;
