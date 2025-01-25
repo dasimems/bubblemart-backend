@@ -16,7 +16,7 @@ export const imageUpload = (limit: number = 2000000) =>
       fileSize: limit // defaults = 1 MB
     },
     fileFilter(_, file, cb) {
-      if (!file.originalname.match(/\.(png|jpg)$/)) {
+      if (!file.originalname.match(/\.(png|jpg|webp|bmp)$/)) {
         return cb(
           new Error(
             JSON.stringify({ message: "Please upload a JPG or PNG Image" })
