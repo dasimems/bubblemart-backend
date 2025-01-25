@@ -62,7 +62,8 @@ const deleteUserController: ControllerType = async (req, res) => {
       .clearCookie(cookieKeys.auth, {
         secure: ENVIRONMENT?.toLowerCase() === "production"
       })
-      .status(204);
+      .status(204)
+      .end();
   } catch (error) {
     return res
       .status(500)

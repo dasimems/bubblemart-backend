@@ -33,7 +33,7 @@ const deleteProductController: ControllerType = async (req, res) => {
     }
 
     await ProductSchema.findByIdAndDelete(id);
-    return res.status(204);
+    return res.status(204).end();
   } catch (error) {
     return res
       .status(500)

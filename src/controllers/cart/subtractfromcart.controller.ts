@@ -65,7 +65,7 @@ const subtractFromCartController: ControllerType = async (req, res) => {
     }
     if (quantity >= cartDetails.quantity) {
       await CartSchema.findByIdAndDelete(cartDetails.id);
-      return res.status(204);
+      return res.status(204).end();
     }
     cartDetails.quantity -= quantity;
     cartDetails.updates = [

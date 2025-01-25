@@ -36,7 +36,7 @@ const deleteAddressController: ControllerType = async (req, res) => {
     }
 
     await AddressSchema.findByIdAndDelete(id);
-    return res.status(204);
+    return res.status(204).end();
   } catch (error) {
     return res
       .status(500)

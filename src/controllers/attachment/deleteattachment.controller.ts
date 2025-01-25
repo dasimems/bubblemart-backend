@@ -5,7 +5,6 @@ import {
   ControllerType
 } from "../../utils/types";
 import cloudinary from "../../utils/cloudinary";
-import { MongoError } from "mongodb";
 import { defaultErrorMessage } from "../../utils/variables";
 
 type DeleteAttachmentBodyType = {
