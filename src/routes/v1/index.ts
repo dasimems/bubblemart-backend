@@ -8,6 +8,7 @@ import cartRoute from "./cart.route";
 import orderRoute from "./order.route";
 import userRoute from "./user.route";
 import uploadRoute from "./upload.route";
+import paymentRoute from "./payment.route";
 const v1Router = express.Router();
 
 v1Router.use(routeGroup.auth, authRouter);
@@ -17,5 +18,6 @@ v1Router.use(routeGroup.cart, authenticationMiddleware, cartRoute);
 v1Router.use(routeGroup.order, authenticationMiddleware, orderRoute);
 v1Router.use(routeGroup.address, authenticationMiddleware, addressRoute);
 v1Router.use(routeGroup.upload, authenticationMiddleware, uploadRoute);
+v1Router.use(routeGroup.payment, authenticationMiddleware, paymentRoute);
 
 export default v1Router;
