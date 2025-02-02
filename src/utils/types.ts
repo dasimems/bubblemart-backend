@@ -19,6 +19,18 @@ export type LinkType = {
   link: string;
 };
 
+export type PaystackInitiateTransactionResponseType = {
+  status: boolean;
+  message: string;
+  data: {
+    authorization_url: string;
+    access_code: string;
+    reference: string;
+  };
+};
+
+export type OrderStatusType = "PAID" | "PENDING" | "DELIVERED";
+
 export type ProductType = "log" | "gift";
 
 export type CoordinateType = {
@@ -100,6 +112,17 @@ export type CartDetailsType = {
   orderId?: Schema.Types.ObjectId;
   quantity: number;
   paidAt?: Date;
+  deliveredAt?: Date;
+};
+
+export type ContactInformationType = {
+  senderName: string;
+  receiverName: string;
+  receiverAddress: string;
+  receiverPhoneNumber: string;
+  shortNote: string;
+  longitude: number;
+  latitude: number;
 };
 
 export type OrderDetailsType = {
@@ -111,9 +134,10 @@ export type OrderDetailsType = {
   paymentInitiatedAt?: Date;
   lastUpdatedAt?: Date;
   updates: ChangesType[];
-  orderNo?: string;
-  addressId?: Schema.Types.ObjectId;
   paymentReference?: string;
+  contactInformation?: ContactInformationType | null;
+  status?: OrderStatusType;
+  deliveredAt?: Date;
 };
 
 export type JWTContentType = {
@@ -178,6 +202,7 @@ export type CartResponseType = {
 export type OrderDetailsResponseType = {
   id: string;
   cartItems: CartDetailsResponseType[];
+  checkoutDetails: PaystackInitiateTransactionResponseType | null;
 } & Omit<
   OrderDetailsType,
   "lastUpdatedAt" | "updates" | "userId" | "cartItems"

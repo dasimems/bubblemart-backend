@@ -77,6 +77,10 @@ const cartSchema = new Schema<CartDetailsType>({
   paidAt: {
     type: Date,
     default: null
+  },
+  deliveredAt: {
+    type: Date,
+    default: null
   }
 });
 

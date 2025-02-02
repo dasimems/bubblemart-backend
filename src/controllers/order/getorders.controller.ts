@@ -18,6 +18,7 @@ import {
   MAX_RETURN_ITEM_COUNT
 } from "../../utils/variables";
 import { Document } from "mongoose";
+import { redisClient } from "../../app";
 
 const getOrdersController: ControllerType = async (req, res) => {
   const { body, query } = req;
@@ -55,31 +56,40 @@ const getOrdersController: ControllerType = async (req, res) => {
       .skip(skip)
       .limit(MAX_RETURN_ITEM_COUNT)
       .exec();
-    const orders: OrderDetailsResponseType[] = orderList.map((order) => ({
-      id: order?.id,
-      orderNo: order?.orderNo,
-      paidAt: order?.paidAt,
-      paymentInitiatedAt: order?.paymentInitiatedAt,
-      paymentReference: order?.paymentReference,
-      refundedAt: order?.refundedAt,
-      cartItems: (
-        (order?.cartItems || []) as unknown as (Document<
-          string,
-          unknown,
-          CartDetailsType
-        > &
-          CartDetailsType)[]
-      )?.map((details) => ({
-        id: details.id,
-        productDetails: details.productDetails,
-        quantity: details.quantity,
-        totalPrice: generateAmount(
-          (details?.quantity || 0) *
-            (details?.productDetails?.amount?.whole || 0)
-        ),
-        isAvailable: false
-      }))
-    }));
+    const orderCheckoutDetails = await Promise.all(
+      orderList.map((order) => redisClient.get(order?.id))
+    );
+    const orders: OrderDetailsResponseType[] = orderList.map((order, index) => {
+      const checkoutDetails = orderCheckoutDetails[index];
+
+      return {
+        id: order?.id,
+        paidAt: order?.paidAt,
+        paymentInitiatedAt: order?.paymentInitiatedAt,
+        paymentReference: order?.paymentReference,
+        refundedAt: order?.refundedAt,
+        contactInformation: order?.contactInformation,
+        status: order?.status,
+        cartItems: (
+          (order?.cartItems || []) as unknown as (Document<
+            string,
+            unknown,
+            CartDetailsType
+          > &
+            CartDetailsType)[]
+        )?.map((details) => ({
+          id: details.id,
+          productDetails: details.productDetails,
+          quantity: details.quantity,
+          totalPrice: generateAmount(
+            (details?.quantity || 0) *
+              (details?.productDetails?.amount?.whole || 0)
+          ),
+          isAvailable: false
+        })),
+        checkoutDetails: checkoutDetails ? JSON.parse(checkoutDetails) : null
+      };
+    });
 
     const canShowPreviousLink = formattedPage > 1;
     const canShowNextLink = formattedPage < maxPage;

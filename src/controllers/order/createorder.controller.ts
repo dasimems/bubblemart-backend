@@ -9,38 +9,58 @@ import {
 } from "../../modules";
 import {
   AuthenticationDestructuredType,
+  ContactInformationType,
   ControllerType,
   OrderDetailsResponseType
 } from "../../utils/types";
 import { defaultErrorMessage } from "../../utils/variables";
 import OrderSchema from "../../models/OrdersModel";
 import Joi, { ValidationError } from "joi";
-import AddressSchema from "../../models/AddressModel";
-import { Schema } from "mongoose";
+import { phoneNumberRegExp } from "../../utils/regex";
 
-export type CreateOrderBodyType = {
-  address: string;
-} & AuthenticationDestructuredType;
+export type CreateOrderBodyType = ContactInformationType &
+  AuthenticationDestructuredType;
 
 const createOrderBodySchema = Joi.object<CreateOrderBodyType>({
-  address: Joi.string().optional()
+  senderName: Joi.string().required().messages({
+    "string.empty": "Sender name is required",
+    "any.required": "Sender name is required"
+  }),
+  receiverAddress: Joi.string().required().messages({
+    "string.empty": "Receiver address is required",
+    "any.required": "Receiver address is required"
+  }),
+  receiverName: Joi.string().required().messages({
+    "string.empty": "Receiver name is required",
+    "any.required": "Receiver name is required"
+  }),
+  receiverPhoneNumber: Joi.string()
+    .regex(phoneNumberRegExp)
+    .required()
+    .messages({
+      "string.empty": "Receiver phone number is required",
+      "any.required": "Receiver phone number is required",
+      "string.pattern.base": "Please input a valid mobile number"
+    }),
+  longitude: Joi.number().required().min(-180).max(180).messages({
+    "number.base": "Longitude must be a valid number",
+    "number.min": "Longitude must be between -180 and 180",
+    "number.max": "Longitude must be between -180 and 180"
+  }),
+  latitude: Joi.number().required().min(-90).max(90).messages({
+    "number.base": "Latitude must be a valid number",
+    "number.min": "Latitude must be between -90 and 90",
+    "number.max": "Latitude must be between -90 and 90"
+  }),
+  shortNote: Joi.string().optional()
 }).unknown(true);
 
 const createOrderController: ControllerType = async (req, res) => {
   const { body } = req;
-  const { fetchedUserDetails, address } = body as CreateOrderBodyType;
+  const { fetchedUserDetails, ...contactDetails } = body as CreateOrderBodyType;
 
   if (!fetchedUserDetails) {
     return res.status(403).json(constructErrorResponseBody("Not allowed!"));
-  }
-
-  const { error } = createOrderBodySchema.validate(body, { abortEarly: false });
-  const errors = formatJoiErrors(error as ValidationError);
-
-  if (errors) {
-    return res
-      .status(400)
-      .json(constructErrorResponseBody("Invalid fields detected", errors));
   }
 
   try {
@@ -58,26 +78,45 @@ const createOrderController: ControllerType = async (req, res) => {
       fetchCartPromise,
       availableGiftCountPromise
     ]);
+    const hasAvailableGift = availableGiftCount > 0;
 
-    if (availableGiftCount > 0 && !address) {
-      return res
-        .status(400)
-        .json(
-          constructErrorResponseBody(
-            "Address required to perform this operation!"
-          )
-        );
-    }
+    if (hasAvailableGift) {
+      const { error } = createOrderBodySchema.validate(body, {
+        abortEarly: false
+      });
+      const errors = formatJoiErrors(error as ValidationError);
 
-    if (availableGiftCount > 0 || address) {
-      const addressDetails = await AddressSchema.findById(address);
-
-      if (!addressDetails) {
+      if (errors) {
         return res
-          .status(404)
-          .json(constructErrorResponseBody("Address not found!"));
+          .status(400)
+          .json(
+            constructErrorResponseBody(
+              "Please fill in your contact information to continue",
+              errors
+            )
+          );
       }
     }
+
+    const {
+      receiverAddress,
+      receiverName,
+      receiverPhoneNumber,
+      senderName,
+      shortNote,
+      longitude,
+      latitude
+    } = contactDetails;
+
+    const contactInformation: ContactInformationType = {
+      receiverAddress,
+      receiverName,
+      receiverPhoneNumber,
+      senderName,
+      shortNote,
+      longitude,
+      latitude
+    };
 
     const cartItems = cartDetails.map((cart) => cart.id);
     if (cartItems.length < 1) {
@@ -89,7 +128,7 @@ const createOrderController: ControllerType = async (req, res) => {
       createOrder(
         cartItems,
         fetchedUserDetails?.id,
-        (address as unknown as Schema.Types.ObjectId) || undefined
+        hasAvailableGift ? contactInformation : undefined
       )
     );
     if (!orderDetails) {
@@ -101,7 +140,7 @@ const createOrderController: ControllerType = async (req, res) => {
           )
         );
     }
-    const { id, createdAt } = orderDetails;
+    const { id, createdAt, status } = orderDetails;
     await Promise.all(
       cartItems.map((id) =>
         CartSchema.findByIdAndUpdate(id, {
@@ -130,7 +169,10 @@ const createOrderController: ControllerType = async (req, res) => {
           (quantity || 0) * (productDetails?.amount?.whole || 0)
         ),
         isAvailable: false
-      }))
+      })),
+      contactInformation: hasAvailableGift ? contactInformation : null,
+      status,
+      checkoutDetails: null
     };
     return res.status(200).json(constructSuccessResponseBody(data));
   } catch (error) {

@@ -4,6 +4,7 @@ import {
   AmountType,
   CartDetailsType,
   CartProductDetails,
+  ContactInformationType,
   LinkType,
   OrderDetailsType,
   ProductDetailsType,
@@ -52,13 +53,23 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
   createOrder = (
     cartItems: Schema.Types.ObjectId[],
     userId: Schema.Types.ObjectId,
-    addressId?: Schema.Types.ObjectId
-  ): OrderDetailsType => ({
-    cartItems,
-    userId,
-    updates: [],
-    addressId
-  }),
+    contactInformation?: ContactInformationType
+  ): OrderDetailsType => {
+    let data: OrderDetailsType = {
+      cartItems,
+      userId,
+      updates: []
+    };
+
+    if (contactInformation) {
+      data = {
+        ...data,
+        contactInformation
+      };
+    }
+
+    return data;
+  },
   createProduct = (
     name: string,
     type: ProductType,
@@ -175,15 +186,15 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
     try {
       const [ivHex, encryptedText] = encryptedData.split(":");
       if (!ivHex || !encryptedText) {
-        throw new Error("Invalid decryption!");
+        return undefined;
       }
       const iv = Buffer.from(ivHex, "hex");
 
       if (iv.length !== 16) {
-        throw new Error("Invalid decryption!");
+        return undefined;
       }
       if (encryptionKey.length !== 32) {
-        throw new Error("Invalid decryption!");
+        return undefined;
       }
       const decipher = crypto.createDecipheriv(
         "aes-256-cbc",
@@ -194,7 +205,7 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
       decrypted += decipher.final("utf8");
       return decrypted;
     } catch {
-      throw new Error("Invalid decryption!");
+      return undefined;
     }
   },
   hashDataWithSalt = (data: string, salt: string) => {

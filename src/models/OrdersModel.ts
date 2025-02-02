@@ -1,19 +1,65 @@
 import { model, Schema } from "mongoose";
-import { OrderDetailsType } from "../utils/types";
+import { ContactInformationType, OrderDetailsType } from "../utils/types";
 import { databaseKeys } from "../utils/variables";
+
+const contactInformationSchema = new Schema<ContactInformationType>(
+  {
+    senderName: {
+      type: String,
+      required: true
+    },
+    receiverName: {
+      type: String,
+      required: true
+    },
+    receiverAddress: {
+      type: String,
+      required: true
+    },
+    receiverPhoneNumber: {
+      type: String,
+      required: true
+    },
+    shortNote: {
+      type: String,
+      default: null
+    },
+    longitude: {
+      type: Number,
+      required: true,
+      validate: {
+        validator: function (v) {
+          return v >= -180 && v <= 180;
+        },
+        message: (props) => `${props.value} is not a valid longitude!`
+      }
+    },
+    latitude: {
+      type: Number,
+      required: true,
+      validate: {
+        validator: function (v) {
+          return v >= -90 && v <= 90;
+        },
+        message: (props) => `${props.value} is not a valid latitude!`
+      }
+    }
+  },
+  { _id: false }
+);
 
 const orderSchema = new Schema<OrderDetailsType>({
   createdAt: {
     default: new Date(),
     type: Date
   },
+  deliveredAt: {
+    default: new Date(),
+    type: Date
+  },
   lastUpdatedAt: {
     default: null,
     type: Date
-  },
-  orderNo: {
-    type: String,
-    default: null
   },
   paidAt: {
     default: null,
@@ -27,6 +73,10 @@ const orderSchema = new Schema<OrderDetailsType>({
     default: null,
     type: Date
   },
+  status: {
+    type: String,
+    default: "PENDING"
+  },
   userId: {
     type: Schema.Types.ObjectId,
     required: true,
@@ -35,6 +85,10 @@ const orderSchema = new Schema<OrderDetailsType>({
   paymentInitiatedAt: {
     default: null,
     type: Date
+  },
+  contactInformation: {
+    type: contactInformationSchema,
+    default: null
   },
   updates: [
     {

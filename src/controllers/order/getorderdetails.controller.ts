@@ -3,12 +3,14 @@ import { constructErrorResponseBody, generateAmount } from "../../modules";
 import {
   AuthenticationDestructuredType,
   CartDetailsType,
-  ControllerType
+  ControllerType,
+  PaystackInitiateTransactionResponseType
 } from "../../utils/types";
 import { databaseKeys, defaultErrorMessage } from "../../utils/variables";
 import OrderSchema from "../../models/OrdersModel";
 import { OrderDetailsResponseType } from "../../utils/types";
 import { Document } from "mongoose";
+import { redisClient } from "../../app";
 
 const getOrderDetailsController: ControllerType = async (req, res) => {
   const { body, params } = req;
@@ -40,6 +42,15 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
         .status(404)
         .json(constructErrorResponseBody("Order details not found!"));
     }
+    let checkoutDetails: PaystackInitiateTransactionResponseType | null = null;
+    const doesPaymentDetailsExist = await redisClient.exists(orderDetails?.id);
+
+    if (doesPaymentDetailsExist) {
+      const paymentDetails = await redisClient.get(orderDetails?.id);
+      if (paymentDetails) {
+        checkoutDetails = JSON.parse(paymentDetails);
+      }
+    }
 
     const data: OrderDetailsResponseType = {
       cartItems: (
@@ -60,11 +71,13 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
         isAvailable: false
       })),
       id: orderDetails?.id,
-      orderNo: orderDetails?.orderNo,
       paidAt: orderDetails?.paidAt,
       paymentInitiatedAt: orderDetails?.paymentInitiatedAt,
       paymentReference: orderDetails?.paymentReference,
-      refundedAt: orderDetails?.refundedAt
+      refundedAt: orderDetails?.refundedAt,
+      contactInformation: orderDetails?.contactInformation,
+      status: orderDetails?.status,
+      checkoutDetails
     };
 
     return res.status(200).json(data);

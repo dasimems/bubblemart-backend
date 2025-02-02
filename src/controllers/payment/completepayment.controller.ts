@@ -6,17 +6,27 @@ import {
   decryptData,
   getOrderEncryptKey
 } from "../../modules";
-import { ControllerType } from "../../utils/types";
-import { defaultErrorMessage } from "../../utils/variables";
+import { CartDetailsType, ControllerType } from "../../utils/types";
+import { databaseKeys, defaultErrorMessage } from "../../utils/variables";
 import CartSchema from "../../models/CartModel";
+import ProductSchema from "../../models/ProductModel";
 
 const completePaymentController: ControllerType = async (req, res) => {
   const { params } = req;
 
   const { auth, orderId } = params;
   try {
-    const orderDetails = await OrderSchema.findById(orderId);
-    if (!orderDetails) {
+    const orderDetails = await OrderSchema.findById(
+      orderId
+    ).populate<CartDetailsType>({
+      path: "cartItems",
+      model: databaseKeys.carts,
+      select: "-__v",
+      options: {
+        strictPopulate: false // Ensures no errors if the product doesn't exist
+      }
+    });
+    if (!orderDetails || !orderDetails?.paymentInitiatedAt) {
       return res
         .status(404)
         .json(constructErrorResponseBody("Unable to determine order!"));
@@ -26,11 +36,7 @@ const completePaymentController: ControllerType = async (req, res) => {
       getOrderEncryptKey(
         orderDetails?.id,
         orderDetails?.userId?.toString(),
-        new Date(
-          orderDetails?.paymentInitiatedAt ||
-            orderDetails?.createdAt ||
-            new Date()
-        ).getTime()
+        new Date(orderDetails?.paymentInitiatedAt).getTime()
       )
     );
     if (!decryptedData) {
@@ -57,6 +63,7 @@ const completePaymentController: ControllerType = async (req, res) => {
     const updateOrderPromise = OrderSchema.findByIdAndUpdate(orderId, {
       paidAt: new Date(),
       lastUpdatedAt: new Date(),
+      status: "PAID",
       $push: {
         updates: {
           $each: [
@@ -68,8 +75,39 @@ const completePaymentController: ControllerType = async (req, res) => {
         }
       }
     });
-
-    await Promise.all([updateCartsPromise, updateOrderPromise]);
+    const cartList = (
+      orderDetails?.cartItems as unknown as CartDetailsType[]
+    ).filter((cart) => cart?.productDetails?.id);
+    const updateProductPromise = Promise.all(
+      cartList.map((cart) =>
+        ProductSchema.findByIdAndUpdate(cart?.productDetails?.id, {
+          $set: {
+            "cartItems.$.quantity": {
+              $cond: {
+                if: {
+                  $lt: [
+                    { $subtract: ["$cartItems.quantity", cart?.quantity || 0] },
+                    1
+                  ]
+                }, // Subtract but make sure it doesn't drop below 1
+                then: 0, // Set to 0 if less than 1
+                else: {
+                  $subtract: ["$cartItems.quantity", cart?.quantity || 0]
+                } // Otherwise, subtract
+              }
+            }
+          }
+        })
+      )
+    );
+    // const allLogProducts = cartList.filter(
+    //   (cart) => cart?.productDetails?.type === "log"
+    // );
+    await Promise.all([
+      updateCartsPromise,
+      updateOrderPromise,
+      updateProductPromise
+    ]);
     return res
       .status(200)
       .json(constructSuccessResponseBody({ message: "Payment verified" }));
