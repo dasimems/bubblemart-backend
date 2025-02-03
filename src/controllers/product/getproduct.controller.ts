@@ -23,11 +23,13 @@ const getProductController: ControllerType = async (req, res) => {
     page = `1`;
   }
 
-  console.log(type);
+  console.log("before condition", type);
 
   if (((type as ProductType) !== "log" && (type as ProductType)) !== "gift") {
     type = undefined;
   }
+
+  console.log("after condition", type);
 
   if (!max || isNaN(parseInt(max?.toString()))) {
     max = MAX_RETURN_ITEM_COUNT?.toString();
