@@ -23,6 +23,8 @@ const getProductController: ControllerType = async (req, res) => {
     page = `1`;
   }
 
+  console.log(type);
+
   if (((type as ProductType) !== "log" && (type as ProductType)) !== "gift") {
     type = undefined;
   }
