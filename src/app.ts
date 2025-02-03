@@ -50,7 +50,7 @@ export const connectDB = async () => {
     process.exit(1);
   }
 };
-
+app.set("trust proxy", 1);
 app.use(corsMiddleWare);
 app.use(limiter);
 app.use(helmet());
