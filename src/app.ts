@@ -9,6 +9,7 @@ import corsMiddleWare from "./middlewares/cors.middleware";
 import mongoose from "mongoose";
 import { createClient } from "redis";
 import rateLimit from "express-rate-limit";
+import csrf from "csurf";
 
 dotenv.config();
 
@@ -16,6 +17,8 @@ export const app: Express = express();
 export const { env } = process;
 
 const uri = `mongodb+srv://${env?.MONGO_DB_USERNAME}:${env?.MONGO_DB_PASSWORD}@${env?.MONGO_CLUSTER_STRING}.mongodb.net/?retryWrites=true&w=majority&appName=${env?.MONGO_DB_APPNAME}`;
+
+const csrfProtection = csrf({ cookie: true });
 
 const redisClient = createClient({ url: env?.REDIS_URL });
 
@@ -48,9 +51,29 @@ export const connectDB = async () => {
 app.use(corsMiddleWare);
 app.use(limiter);
 app.use(helmet());
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'"],
+      imgSrc: ["'self'"],
+      connectSrc: ["'self'"]
+    }
+  })
+);
+app.use(
+  helmet.hsts({
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  })
+);
+app.use(helmet.frameguard({ action: "deny" }));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(csrfProtection);
 app.use(mongoSanitize());
 
 app.get("/", (_req, res) => {
