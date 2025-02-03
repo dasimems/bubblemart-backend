@@ -32,7 +32,10 @@ const limiter = rateLimit({
 
 (async () => {
   await redisClient
-    .on("error", (err) => console.log("Redis Client Error", err))
+    .on("error", (err) => {
+      console.log("Redis Client Error", err);
+      process.exit(1);
+    })
     .connect();
 })();
 
