@@ -26,6 +26,7 @@ export const authenticationMiddleware: MiddleWareType = async (
   }
 
   if (!fetchedToken) {
+    console.log("Couldn't fetch token!");
     return res
       .clearCookie(cookieKeys.auth, {
         secure: ENVIRONMENT?.toLowerCase() === "production"
@@ -39,6 +40,9 @@ export const authenticationMiddleware: MiddleWareType = async (
     const content = decryptToken(authToken);
 
     if (!content || (content && content.ipAddress !== ipAddress)) {
+      console.log("Couldn't fetch content!");
+
+      console.log("Ip address don't match!", content?.ipAddress, ipAddress);
       return res
         .clearCookie(cookieKeys.auth, {
           secure: ENVIRONMENT?.toLowerCase() === "production"
@@ -53,6 +57,7 @@ export const authenticationMiddleware: MiddleWareType = async (
     const expiryDate = new Date(expiredAt).getTime();
 
     if (todaysDate >= expiryDate) {
+      console.log("Expiry date issue!");
       return res
         .clearCookie(cookieKeys.auth, {
           secure: ENVIRONMENT?.toLowerCase() === "production"
@@ -62,6 +67,7 @@ export const authenticationMiddleware: MiddleWareType = async (
     }
     const userDetails = await UserModel.findById(id);
     if (!userDetails) {
+      console.log("Couldn't fetch user!");
       return res
         .clearCookie(cookieKeys.auth, {
           secure: ENVIRONMENT?.toLowerCase() === "production"
@@ -72,7 +78,10 @@ export const authenticationMiddleware: MiddleWareType = async (
     req.body.userTokenRole = role;
     req.body.userTokenId = id;
     req.body.fetchedUserDetails = userDetails;
-  } catch {
+  } catch (error) {
+    console.log("Other problem authenticating!");
+
+    console.log(error);
     return res
       .clearCookie(cookieKeys.auth, {
         secure: ENVIRONMENT?.toLowerCase() === "production"
