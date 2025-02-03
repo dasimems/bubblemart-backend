@@ -8,6 +8,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import corsMiddleWare from "./middlewares/cors.middleware";
 import mongoose from "mongoose";
 import { createClient } from "redis";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
@@ -17,6 +18,14 @@ export const { env } = process;
 const uri = `mongodb+srv://${env?.MONGO_DB_USERNAME}:${env?.MONGO_DB_PASSWORD}@${env?.MONGO_CLUSTER_STRING}.mongodb.net/?retryWrites=true&w=majority&appName=${env?.MONGO_DB_APPNAME}`;
 
 const redisClient = createClient({ url: env?.REDIS_URL });
+
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 10,
+  message: "Too many requests, please try again later.",
+  statusCode: 429,
+  headers: true
+});
 
 (async () => {
   await redisClient
@@ -36,9 +45,10 @@ export const connectDB = async () => {
   }
 };
 
+app.use(corsMiddleWare);
+app.use(limiter);
 app.use(helmet());
 app.use(cookieParser());
-app.use(corsMiddleWare);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(mongoSanitize());
