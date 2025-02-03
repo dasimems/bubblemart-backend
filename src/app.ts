@@ -18,7 +18,12 @@ export const { env } = process;
 
 const uri = `mongodb+srv://${env?.MONGO_DB_USERNAME}:${env?.MONGO_DB_PASSWORD}@${env?.MONGO_CLUSTER_STRING}.mongodb.net/?retryWrites=true&w=majority&appName=${env?.MONGO_DB_APPNAME}`;
 
-const csrfProtection = csrf({ cookie: true });
+const csrfProtection = csrf({
+  cookie: true,
+  httpOnly: true, // Prevent JS from accessing the CSRF token
+  secure: process.env.NODE_ENV === "production", // Use secure cookies in production (HTTPS)
+  sameSite: "Strict"
+});
 
 const redisClient = createClient({ url: env?.REDIS_URL });
 
