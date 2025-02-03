@@ -81,7 +81,7 @@ app.use(helmet.frameguard({ action: "deny" }));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(csrfProtection);
+// app.use(csrfProtection);
 app.use(mongoSanitize());
 
 app.get("/", (_req, res) => {
