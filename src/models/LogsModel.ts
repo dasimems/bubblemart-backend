@@ -12,6 +12,11 @@ const logSchema = new Schema<LogDetailsType>({
     ref: databaseKeys.products,
     required: true
   },
+  assignedTo: {
+    type: Schema.Types.ObjectId,
+    ref: databaseKeys.users,
+    default: null
+  },
   lastUpdatedAt: {
     type: Date,
     default: null

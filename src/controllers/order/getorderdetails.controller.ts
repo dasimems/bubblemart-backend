@@ -13,9 +13,13 @@ import { Document } from "mongoose";
 import { redisClient } from "../../app";
 
 const getOrderDetailsController: ControllerType = async (req, res) => {
-  const { body, params } = req;
+  const { body, params, query } = req;
+  const { isAdmin } = query;
   const { fetchedUserDetails } = body as AuthenticationDestructuredType;
-  if (!fetchedUserDetails) {
+  if (
+    !fetchedUserDetails ||
+    (isAdmin && fetchedUserDetails?.role !== "ADMIN")
+  ) {
     return res.status(403).json(constructErrorResponseBody("Not allowed!"));
   }
   const { id } = params || {};
@@ -41,6 +45,12 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
       return res
         .status(404)
         .json(constructErrorResponseBody("Order details not found!"));
+    }
+    if (
+      !isAdmin &&
+      orderDetails?.userId?.toString() !== fetchedUserDetails?.id?.toString()
+    ) {
+      return res.status(403).json("Action not permitted");
     }
     let checkoutDetails: PaystackInitiateTransactionResponseType | null = null;
     const doesPaymentDetailsExist = await redisClient.exists(orderDetails?.id);

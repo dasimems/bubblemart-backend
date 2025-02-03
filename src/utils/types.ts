@@ -71,6 +71,7 @@ export type LogDetailsType = {
   lastUpdatedAt?: Date;
   productId: Schema.Types.ObjectId;
   updates: ChangesType[];
+  assignedTo?: Schema.Types.ObjectId;
 } & LogType;
 
 export type ProductDetailsType = {

@@ -23,10 +23,16 @@ import { redisClient } from "../../app";
 const getOrdersController: ControllerType = async (req, res) => {
   const { body, query } = req;
   const { fetchedUserDetails } = body as AuthenticationDestructuredType;
-  if (!fetchedUserDetails) {
+
+  let { page } = query;
+  const { isAdmin } = query;
+
+  if (
+    !fetchedUserDetails ||
+    (isAdmin && fetchedUserDetails?.role !== "ADMIN")
+  ) {
     return res.status(403).json(constructErrorResponseBody("Not allowed!"));
   }
-  let { page } = query;
   if (!page) {
     page = `1`;
   }
@@ -42,9 +48,13 @@ const getOrdersController: ControllerType = async (req, res) => {
       return res.status(416).json(constructErrorResponseBody("Out of bound!"));
     }
     const skip = MAX_RETURN_ITEM_COUNT * (formattedPage - 1);
-    const orderList = await OrderSchema.find({
-      userId: fetchedUserDetails.id
-    })
+    const orderList = await OrderSchema.find(
+      isAdmin
+        ? {
+            userId: fetchedUserDetails.id
+          }
+        : {}
+    )
       .populate<CartDetailsType>({
         path: "cartItems",
         model: databaseKeys.carts,
