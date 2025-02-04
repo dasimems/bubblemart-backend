@@ -2,7 +2,6 @@ import { MongoError } from "mongodb";
 import {
   constructErrorResponseBody,
   constructSuccessResponseBody,
-  generateAmount,
   getOrderEncryptKey
 } from "../../modules";
 import {
@@ -88,13 +87,13 @@ const createPaymentController: ControllerType = async (req, res) => {
       totalPrice += cartPrice;
     });
 
-    const price = generateAmount(totalPrice);
+    // const price = generateAmount(totalPrice);
 
-    if (!price) {
-      return res
-        .status(400)
-        .json(constructErrorResponseBody("Price not determined!"));
-    }
+    // if (!price) {
+    //   return res
+    //     .status(400)
+    //     .json(constructErrorResponseBody("Price not determined!"));
+    // }
 
     const paymentInitiatedTime = new Date();
 
@@ -106,7 +105,7 @@ const createPaymentController: ControllerType = async (req, res) => {
 
     const paymentBody = {
       email: fetchedUserDetails?.email,
-      amount: price.amount,
+      amount: totalPrice,
       currency: "NGN",
       callback_url: `https://${host}/v1/payment/${orderDetails?.id}/${orderEncryptionKey}`
     };
