@@ -1,5 +1,9 @@
 import UserModel from "../models/UserModel";
-import { constructErrorResponseBody, decryptToken } from "../modules";
+import {
+  constructErrorResponseBody,
+  decryptToken,
+  getIpAddress
+} from "../modules";
 import { MiddleWareType } from "../utils/types";
 import { cookieKeys } from "../utils/variables";
 import dotenv from "dotenv";
@@ -14,8 +18,7 @@ export const authenticationMiddleware: MiddleWareType = async (
   next
 ) => {
   const fetchedToken: string = req.cookies.auth || req.headers.authorization;
-  const [firstIp] = req.headers["x-forwarded-for"]?.toString().split(",") || [];
-  const ipAddress = firstIp || req?.ip || req?.connection?.remoteAddress;
+  const ipAddress = getIpAddress(req);
 
   console.log("X-Forwarded-For:", req.headers["x-forwarded-for"]);
   console.log("Resolved IP Address:", req.ip);

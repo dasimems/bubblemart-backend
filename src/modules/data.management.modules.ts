@@ -13,6 +13,7 @@ import {
 } from "../utils/types";
 import { Schema } from "mongoose";
 import dotenv from "dotenv";
+import { Request } from "express";
 dotenv.config();
 
 const { env } = process;
@@ -223,4 +224,11 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
       "utf8"
     );
     return `${orderId}-<${encryptionKey}>-${userId}-<${encryptionKey}>-${time}`;
+  },
+  getIpAddress = (req: Request) => {
+    const [firstIp] =
+      req.headers["x-forwarded-for"]?.toString().split(",") || [];
+    const ipAddress = firstIp || req?.ip || req?.connection?.remoteAddress;
+
+    return ipAddress;
   };

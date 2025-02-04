@@ -4,7 +4,8 @@ import {
   compareHashedPassword,
   constructErrorResponseBody,
   constructSuccessResponseBody,
-  encryptToken
+  encryptToken,
+  getIpAddress
 } from "../../modules";
 import { ControllerType, UserDetailsResponseType } from "../../utils/types";
 import dotenv from "dotenv";
@@ -23,7 +24,7 @@ export type LoginBodyType = {
 export const loginController: ControllerType = async (req, res) => {
   const { body } = req;
   const { email: bodyEmail, password } = (body || {}) as LoginBodyType;
-  const ipAddress = req?.ip || req?.connection?.remoteAddress;
+  const ipAddress = getIpAddress(req);
 
   if (!ipAddress) {
     return res
