@@ -1,6 +1,7 @@
 import { model, Schema } from "mongoose";
 import { CartDetailsType } from "../utils/types";
 import { databaseKeys } from "../utils/variables";
+import amountSchema from "./AmountModel";
 
 const cartSchema = new Schema<CartDetailsType>({
   createdAt: {
@@ -34,21 +35,8 @@ const cartSchema = new Schema<CartDetailsType>({
       required: true
     },
     amount: {
-      amount: { type: Number, required: true },
-      currency: {
-        symbol: { type: String, required: true },
-        name: { type: String, required: true }
-      },
-      formatted: {
-        withoutCurrency: {
-          type: String,
-          required: true
-        },
-        withCurrency: {
-          type: String,
-          required: true
-        }
-      }
+      type: amountSchema,
+      required: true
     }
   },
   userId: {
