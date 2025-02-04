@@ -14,7 +14,8 @@ export const authenticationMiddleware: MiddleWareType = async (
   next
 ) => {
   const fetchedToken: string = req.cookies.auth || req.headers.authorization;
-  const ipAddress = req?.ip || req?.connection?.remoteAddress;
+  const [firstIp] = req.headers["x-forwarded-for"]?.toString().split(",") || [];
+  const ipAddress = firstIp || req?.ip || req?.connection?.remoteAddress;
 
   console.log("X-Forwarded-For:", req.headers["x-forwarded-for"]);
   console.log("Resolved IP Address:", req.ip);
