@@ -28,9 +28,9 @@ export type AddProductBodyType = {
 } & Partial<AuthenticationDestructuredType>;
 
 const logBodySchema = Joi.object({
-  email: Joi.string().email().required().messages({
-    "string.empty": "Email is required",
-    "any.required": "Email is required"
+  email: Joi.string().required().messages({
+    "string.empty": "Email/Username is required",
+    "any.required": "Email/Username is required"
   }), // Validate email format
   password: Joi.string().min(6).required().messages({
     "string.empty": "Password is required",

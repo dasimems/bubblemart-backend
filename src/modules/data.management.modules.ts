@@ -19,13 +19,15 @@ dotenv.config();
 const { env } = process;
 
 export const generateAmount = (inputtedAmount: number): AmountType => {
+    if (Number.isNaN(inputtedAmount)) {
+      inputtedAmount = 0;
+    }
     const amount = inputtedAmount * 1000,
-      formattedAmount = amount / 1000,
       withCurrency = new Intl.NumberFormat("en-NG", {
         style: "currency",
         currency: "NGN"
-      }).format(formattedAmount),
-      withoutCurrency = new Intl.NumberFormat("en-US").format(formattedAmount);
+      }).format(inputtedAmount),
+      withoutCurrency = new Intl.NumberFormat("en-NG").format(inputtedAmount);
     return {
       amount,
       whole: inputtedAmount,
