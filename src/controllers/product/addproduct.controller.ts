@@ -137,13 +137,14 @@ const addProductController: ControllerType = async (req, res) => {
     );
 
     let data: ProductDetailsResponseType = {
-      amount: productDetails.amount,
-      description: productDetails.description,
-      id: productDetails.id,
-      image: productDetails.image,
-      name: productDetails.name,
-      quantity: productDetails.quantity,
-      type: productDetails.type
+      amount: productDetails?.amount,
+      description: productDetails?.description,
+      id: productDetails?.id,
+      image: productDetails?.image,
+      name: productDetails?.name,
+      quantity: productDetails?.quantity,
+      type: productDetails?.type,
+      createdAt: productDetails?.createdAt
     };
     if (type === "log") {
       data = {

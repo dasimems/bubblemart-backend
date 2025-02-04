@@ -145,13 +145,14 @@ const updateProductController: ControllerType = async (req, res) => {
         );
     }
     const data: ProductDetailsResponseType = {
-      amount: newProductDetails.amount,
-      description: newProductDetails.description,
-      id: newProductDetails.id,
-      image: newProductDetails.image,
-      name: newProductDetails.name,
-      quantity: newProductDetails.quantity,
-      type: newProductDetails.type
+      amount: newProductDetails?.amount,
+      description: newProductDetails?.description,
+      id: newProductDetails?.id,
+      image: newProductDetails?.image,
+      name: newProductDetails?.name,
+      quantity: newProductDetails?.quantity,
+      type: newProductDetails?.type,
+      createdAt: newProductDetails?.createdAt
     };
     return res.status(200).json(constructSuccessResponseBody(data));
   } catch (error) {
