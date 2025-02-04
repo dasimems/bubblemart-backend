@@ -19,6 +19,8 @@ export const authenticationMiddleware: MiddleWareType = async (
 
   console.log("X-Forwarded-For:", req.headers["x-forwarded-for"]);
   console.log("Resolved IP Address:", req.ip);
+  console.log("Remote Address:", req.connection.remoteAddress);
+  console.log("Choosen Ip:", ipAddress);
 
   if (!ipAddress) {
     return res
