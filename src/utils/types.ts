@@ -180,10 +180,7 @@ export type LogDetailsResponseType = {
 export type ProductDetailsResponseType = {
   id: string;
   logs?: LogDetailsResponseType[];
-} & Omit<
-  ProductDetailsType,
-  "createdAt" | "createdBy" | "lastUpdatedAt" | "updates"
->;
+} & Omit<ProductDetailsType, "createdBy" | "lastUpdatedAt" | "updates">;
 export type AddressDetailsResponseType = {
   id: string;
 } & Omit<AddressDetailsType, "userId" | "lastUpdatedAt" | "updates">;

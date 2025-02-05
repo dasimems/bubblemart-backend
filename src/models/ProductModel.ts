@@ -1,24 +1,12 @@
 import { model, Schema } from "mongoose";
 import { databaseKeys } from "../utils/variables";
 import { ProductDetailsType } from "../utils/types";
+import amountSchema from "./AmountModel";
 
 const productSchema = new Schema<ProductDetailsType>({
   amount: {
-    amount: { type: Number, required: true },
-    currency: {
-      symbol: { type: String, required: true },
-      name: { type: String, required: true }
-    },
-    formatted: {
-      withoutCurrency: {
-        type: String,
-        required: true
-      },
-      withCurrency: {
-        type: String,
-        required: true
-      }
-    }
+    type: amountSchema,
+    required: true
   },
   createdAt: {
     type: Date,

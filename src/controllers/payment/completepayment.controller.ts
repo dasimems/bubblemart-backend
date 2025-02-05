@@ -10,6 +10,7 @@ import { CartDetailsType, ControllerType } from "../../utils/types";
 import { databaseKeys, defaultErrorMessage } from "../../utils/variables";
 import CartSchema from "../../models/CartModel";
 import ProductSchema from "../../models/ProductModel";
+import { redisClient } from "../../app";
 
 const completePaymentController: ControllerType = async (req, res) => {
   const { params } = req;
@@ -78,6 +79,7 @@ const completePaymentController: ControllerType = async (req, res) => {
     const cartList = (
       orderDetails?.cartItems as unknown as CartDetailsType[]
     ).filter((cart) => cart?.productDetails?.id);
+
     const updateProductPromise = Promise.all(
       cartList.map((cart) =>
         ProductSchema.findByIdAndUpdate(cart?.productDetails?.id, {
@@ -100,13 +102,16 @@ const completePaymentController: ControllerType = async (req, res) => {
         })
       )
     );
+
+    const deleteRedisRecordPromise = redisClient.del(orderDetails?.id);
     // const allLogProducts = cartList.filter(
     //   (cart) => cart?.productDetails?.type === "log"
     // );
     await Promise.all([
       updateCartsPromise,
       updateOrderPromise,
-      updateProductPromise
+      updateProductPromise,
+      deleteRedisRecordPromise
     ]);
     return res
       .status(200)

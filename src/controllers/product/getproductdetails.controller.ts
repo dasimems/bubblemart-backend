@@ -24,7 +24,7 @@ const getProductDetails: ControllerType = async (req, res) => {
         .json(constructErrorResponseBody("Product not found"));
     }
 
-    const { amount, description, name, type, quantity, image, id } =
+    const { amount, description, name, type, quantity, image, id, createdAt } =
       productDetails;
     const data: ProductDetailsResponseType = {
       amount,
@@ -33,7 +33,8 @@ const getProductDetails: ControllerType = async (req, res) => {
       type,
       quantity,
       image,
-      id
+      id,
+      createdAt
     };
     return res.status(200).json(constructSuccessResponseBody(data));
   } catch (error) {

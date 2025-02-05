@@ -28,9 +28,9 @@ export type AddProductBodyType = {
 } & Partial<AuthenticationDestructuredType>;
 
 const logBodySchema = Joi.object({
-  email: Joi.string().email().required().messages({
-    "string.empty": "Email is required",
-    "any.required": "Email is required"
+  email: Joi.string().required().messages({
+    "string.empty": "Email/Username is required",
+    "any.required": "Email/Username is required"
   }), // Validate email format
   password: Joi.string().min(6).required().messages({
     "string.empty": "Password is required",
@@ -137,13 +137,14 @@ const addProductController: ControllerType = async (req, res) => {
     );
 
     let data: ProductDetailsResponseType = {
-      amount: productDetails.amount,
-      description: productDetails.description,
-      id: productDetails.id,
-      image: productDetails.image,
-      name: productDetails.name,
-      quantity: productDetails.quantity,
-      type: productDetails.type
+      amount: productDetails?.amount,
+      description: productDetails?.description,
+      id: productDetails?.id,
+      image: productDetails?.image,
+      name: productDetails?.name,
+      quantity: productDetails?.quantity,
+      type: productDetails?.type,
+      createdAt: productDetails?.createdAt
     };
     if (type === "log") {
       data = {

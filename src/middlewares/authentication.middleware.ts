@@ -1,5 +1,9 @@
 import UserModel from "../models/UserModel";
-import { constructErrorResponseBody, decryptToken } from "../modules";
+import {
+  constructErrorResponseBody,
+  decryptToken,
+  getIpAddress
+} from "../modules";
 import { MiddleWareType } from "../utils/types";
 import { cookieKeys } from "../utils/variables";
 import dotenv from "dotenv";
@@ -14,7 +18,12 @@ export const authenticationMiddleware: MiddleWareType = async (
   next
 ) => {
   const fetchedToken: string = req.cookies.auth || req.headers.authorization;
-  const ipAddress = req?.ip || req?.connection?.remoteAddress;
+  const ipAddress = getIpAddress(req);
+
+  console.log("X-Forwarded-For:", req.headers["x-forwarded-for"]);
+  console.log("Resolved IP Address:", req.ip);
+  console.log("Remote Address:", req.connection.remoteAddress);
+  console.log("Choosen Ip:", ipAddress);
 
   if (!ipAddress) {
     return res
@@ -26,6 +35,7 @@ export const authenticationMiddleware: MiddleWareType = async (
   }
 
   if (!fetchedToken) {
+    console.log("Couldn't fetch token!");
     return res
       .clearCookie(cookieKeys.auth, {
         secure: ENVIRONMENT?.toLowerCase() === "production"
@@ -39,6 +49,9 @@ export const authenticationMiddleware: MiddleWareType = async (
     const content = decryptToken(authToken);
 
     if (!content || (content && content.ipAddress !== ipAddress)) {
+      console.log("Couldn't fetch content!");
+
+      console.log("Ip address don't match!", content?.ipAddress, ipAddress);
       return res
         .clearCookie(cookieKeys.auth, {
           secure: ENVIRONMENT?.toLowerCase() === "production"
@@ -53,6 +66,7 @@ export const authenticationMiddleware: MiddleWareType = async (
     const expiryDate = new Date(expiredAt).getTime();
 
     if (todaysDate >= expiryDate) {
+      console.log("Expiry date issue!");
       return res
         .clearCookie(cookieKeys.auth, {
           secure: ENVIRONMENT?.toLowerCase() === "production"
@@ -62,6 +76,7 @@ export const authenticationMiddleware: MiddleWareType = async (
     }
     const userDetails = await UserModel.findById(id);
     if (!userDetails) {
+      console.log("Couldn't fetch user!");
       return res
         .clearCookie(cookieKeys.auth, {
           secure: ENVIRONMENT?.toLowerCase() === "production"
@@ -72,7 +87,10 @@ export const authenticationMiddleware: MiddleWareType = async (
     req.body.userTokenRole = role;
     req.body.userTokenId = id;
     req.body.fetchedUserDetails = userDetails;
-  } catch {
+  } catch (error) {
+    console.log("Other problem authenticating!");
+
+    console.log(error);
     return res
       .clearCookie(cookieKeys.auth, {
         secure: ENVIRONMENT?.toLowerCase() === "production"

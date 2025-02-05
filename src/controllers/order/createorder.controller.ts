@@ -24,15 +24,18 @@ export type CreateOrderBodyType = ContactInformationType &
 const createOrderBodySchema = Joi.object<CreateOrderBodyType>({
   senderName: Joi.string().required().messages({
     "string.empty": "Sender name is required",
-    "any.required": "Sender name is required"
+    "any.required": "Sender name is required",
+    "string.pattern.base": "Please input a valid name"
   }),
   receiverAddress: Joi.string().required().messages({
     "string.empty": "Receiver address is required",
-    "any.required": "Receiver address is required"
+    "any.required": "Receiver address is required",
+    "string.pattern.base": "Please input a valid address"
   }),
   receiverName: Joi.string().required().messages({
     "string.empty": "Receiver name is required",
-    "any.required": "Receiver name is required"
+    "any.required": "Receiver name is required",
+    "string.pattern.base": "Please input a valid name"
   }),
   receiverPhoneNumber: Joi.string()
     .regex(phoneNumberRegExp)
@@ -52,7 +55,7 @@ const createOrderBodySchema = Joi.object<CreateOrderBodyType>({
     "number.min": "Latitude must be between -90 and 90",
     "number.max": "Latitude must be between -90 and 90"
   }),
-  shortNote: Joi.string().optional()
+  shortNote: Joi.string().optional().empty(["", null])
 }).unknown(true);
 
 const createOrderController: ControllerType = async (req, res) => {

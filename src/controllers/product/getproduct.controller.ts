@@ -23,7 +23,7 @@ const getProductController: ControllerType = async (req, res) => {
     page = `1`;
   }
 
-  if (((type as ProductType) !== "log" && (type as ProductType)) !== "gift") {
+  if ((type as ProductType) !== "log" && (type as ProductType) !== "gift") {
     type = undefined;
   }
 
@@ -53,14 +53,24 @@ const getProductController: ControllerType = async (req, res) => {
       .exec();
 
     const formattedProduct: ProductDetailsResponseType[] = fetchedProduct.map(
-      ({ name, type, quantity, amount, image, description, id }) => ({
+      ({
         name,
         type,
         quantity,
         amount,
         image,
         description,
-        id
+        id,
+        createdAt
+      }) => ({
+        name,
+        type,
+        quantity,
+        amount,
+        image,
+        description,
+        id,
+        createdAt
       })
     );
     const canShowPreviousLink = formattedPage > 1;
