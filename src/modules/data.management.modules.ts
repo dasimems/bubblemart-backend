@@ -22,7 +22,7 @@ export const generateAmount = (inputtedAmount: number): AmountType => {
     if (Number.isNaN(inputtedAmount)) {
       inputtedAmount = 0;
     }
-    const amount = inputtedAmount * 1000,
+    const amount = inputtedAmount * 100,
       withCurrency = new Intl.NumberFormat("en-NG", {
         style: "currency",
         currency: "NGN"
