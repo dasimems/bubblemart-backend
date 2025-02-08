@@ -21,19 +21,20 @@ export interface PaystackLog {
   errors: number;
   success: boolean;
   mobile: boolean;
-  input: any[];
+  input: unknown[]; // Using unknown instead of any
   history: PaystackLogHistory[];
 }
 
 export interface PaystackCustomer {
   id: number;
-  first_name: string;
-  last_name: string;
+  first_name: string | null;
+  last_name: string | null;
   email: string;
-  phone: string;
-  metadata: Record<string, any>;
+  phone: string | null;
+  metadata: Record<string, unknown> | null; // Replacing any with a generic object
   customer_code: string;
   risk_action: string;
+  international_format_phone: string | null;
 }
 
 export interface PaystackAuthorization {
@@ -49,7 +50,9 @@ export interface PaystackAuthorization {
   brand: string;
   reusable: boolean;
   signature: string;
+  account_name: string | null;
 }
+
 export interface PaystackWebhookData {
   id: number;
   domain: string;
@@ -72,7 +75,49 @@ export interface PaystackWebhookData {
   requested_amount: number;
   transaction_date: string;
 }
+
 export interface PaystackWebhookEvent {
   event: string; // e.g., "charge.success", "charge.failed"
   data: PaystackWebhookData;
+}
+
+export interface PaystackTransactionData {
+  id: number;
+  domain: string;
+  status: "success" | "failed" | "pending"; // Possible values
+  reference: string;
+  receipt_number: string | null;
+  amount: number;
+  message: string | null;
+  gateway_response: string;
+  paid_at: string;
+  created_at: string;
+  channel: string;
+  currency: string;
+  ip_address: string;
+  metadata: string | null;
+  log: PaystackLog;
+  fees: number;
+  fees_split: Record<string, unknown> | null; // Generic object instead of any
+  authorization: PaystackAuthorization;
+  customer: PaystackCustomer;
+  plan: string | null;
+  split: Record<string, unknown>; // Replaced any with a generic object
+  order_id: string | null;
+  paidAt: string;
+  createdAt: string;
+  requested_amount: number;
+  pos_transaction_data: Record<string, unknown> | null; // Replaced any with a generic object
+  source: Record<string, unknown> | null;
+  fees_breakdown: Record<string, unknown> | null;
+  connect: Record<string, unknown> | null;
+  transaction_date: string;
+  plan_object: Record<string, unknown>;
+  subaccount: Record<string, unknown>;
+}
+
+export interface PaystackVerificationResponse {
+  status: boolean;
+  message: string;
+  data: PaystackTransactionData;
 }
