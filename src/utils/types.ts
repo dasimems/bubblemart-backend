@@ -200,6 +200,7 @@ export type CartResponseType = {
 export type OrderDetailsResponseType = {
   id: string;
   cartItems: CartDetailsResponseType[];
+  paymentMethod?: string;
   checkoutDetails: PaystackInitiateTransactionResponseType | null;
 } & Omit<
   OrderDetailsType,

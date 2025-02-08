@@ -50,6 +50,7 @@ const verifyPaymentController: ControllerType = async (req, res) => {
     const { data } = await paystackApi.get<PaystackVerificationResponse>(
       `/transaction/verify/${orderDetails?.paymentReference}`
     );
+    const { channel } = data?.data || {};
     if (!data?.status) {
       return res
         .status(404)
@@ -80,7 +81,8 @@ const verifyPaymentController: ControllerType = async (req, res) => {
       refundedAt: orderDetails?.refundedAt,
       contactInformation: orderDetails?.contactInformation,
       status: orderDetails?.status,
-      checkoutDetails: null
+      checkoutDetails: null,
+      paymentMethod: channel
     };
     res.status(200).json(constructSuccessResponseBody(dataToSend));
   } catch (error) {
