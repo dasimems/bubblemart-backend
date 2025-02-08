@@ -81,7 +81,7 @@ const verifyPaymentController: ControllerType = async (req, res) => {
         isAvailable: false
       })),
       id: orderDetails?.id,
-      paidAt: orderDetails?.paidAt,
+      paidAt: new Date(paid_at),
       paymentInitiatedAt: orderDetails?.paymentInitiatedAt,
       paymentReference: orderDetails?.paymentReference,
       refundedAt: orderDetails?.refundedAt,
