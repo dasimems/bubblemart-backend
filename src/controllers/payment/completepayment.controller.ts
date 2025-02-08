@@ -11,6 +11,86 @@ import CartSchema from "../../models/CartModel";
 import ProductSchema from "../../models/ProductModel";
 import { redisClient } from "../../app";
 import { PaystackWebhookEvent } from "../../apis/paystack";
+import { Document } from "mongoose";
+
+export const updateOrderProduct = (orderDetails, paidAt) => {
+  const updateCartsPromise = Promise.all(
+    (
+      (orderDetails?.cartItems || []) as unknown as (Document<
+        string,
+        unknown,
+        CartDetailsType
+      > &
+        CartDetailsType)[]
+    ).map((cart) =>
+      CartSchema.findByIdAndUpdate(cart?.id, {
+        paidAt: new Date(paidAt),
+        lastUpdatedAt: new Date(),
+        $push: {
+          updates: {
+            $each: [
+              {
+                description: `Payment made!`,
+                updatedAt: new Date()
+              }
+            ]
+          }
+        }
+      })
+    )
+  );
+  const updateOrderPromise = OrderSchema.findByIdAndUpdate(orderDetails?.id, {
+    paidAt: new Date(paidAt),
+    lastUpdatedAt: new Date(),
+    status: "PAID",
+    $push: {
+      updates: {
+        $each: [
+          {
+            description: `Payment successfully made!`,
+            updatedAt: new Date()
+          }
+        ]
+      }
+    }
+  });
+  const cartList = (
+    orderDetails?.cartItems as unknown as CartDetailsType[]
+  ).filter((cart) => cart?.productDetails?.id);
+
+  const updateProductPromise = Promise.all(
+    cartList.map((cart) =>
+      ProductSchema.findByIdAndUpdate(cart?.productDetails?.id, {
+        $set: {
+          "cartItems.$.quantity": {
+            $cond: {
+              if: {
+                $lt: [
+                  {
+                    $subtract: ["$cartItems.quantity", cart?.quantity || 0]
+                  },
+                  1
+                ]
+              }, // Subtract but make sure it doesn't drop below 1
+              then: 0, // Set to 0 if less than 1
+              else: {
+                $subtract: ["$cartItems.quantity", cart?.quantity || 0]
+              } // Otherwise, subtract
+            }
+          }
+        }
+      })
+    )
+  );
+
+  const deleteRedisRecordPromise = redisClient.del(orderDetails?.id);
+  return Promise.all([
+    updateCartsPromise,
+    updateOrderPromise,
+    updateProductPromise,
+    deleteRedisRecordPromise
+  ]);
+};
 
 const completePaymentController: ControllerType = async (req, res) => {
   const { body, headers } = req;
@@ -43,81 +123,10 @@ const completePaymentController: ControllerType = async (req, res) => {
           .json(constructErrorResponseBody("Unable to determine order!"));
       }
 
-      const updateCartsPromise = Promise.all(
-        (orderDetails?.cartItems || []).map((id) =>
-          CartSchema.findByIdAndUpdate(id, {
-            paidAt: new Date(paid_at),
-            lastUpdatedAt: new Date(),
-            $push: {
-              updates: {
-                $each: [
-                  {
-                    description: `Payment made!`,
-                    updatedAt: new Date()
-                  }
-                ]
-              }
-            }
-          })
-        )
-      );
-      const updateOrderPromise = OrderSchema.findByIdAndUpdate(
-        orderDetails?.id,
-        {
-          paidAt: new Date(paid_at),
-          lastUpdatedAt: new Date(),
-          status: "PAID",
-          $push: {
-            updates: {
-              $each: [
-                {
-                  description: `Payment successfully made!`,
-                  updatedAt: new Date()
-                }
-              ]
-            }
-          }
-        }
-      );
-      const cartList = (
-        orderDetails?.cartItems as unknown as CartDetailsType[]
-      ).filter((cart) => cart?.productDetails?.id);
-
-      const updateProductPromise = Promise.all(
-        cartList.map((cart) =>
-          ProductSchema.findByIdAndUpdate(cart?.productDetails?.id, {
-            $set: {
-              "cartItems.$.quantity": {
-                $cond: {
-                  if: {
-                    $lt: [
-                      {
-                        $subtract: ["$cartItems.quantity", cart?.quantity || 0]
-                      },
-                      1
-                    ]
-                  }, // Subtract but make sure it doesn't drop below 1
-                  then: 0, // Set to 0 if less than 1
-                  else: {
-                    $subtract: ["$cartItems.quantity", cart?.quantity || 0]
-                  } // Otherwise, subtract
-                }
-              }
-            }
-          })
-        )
-      );
-
-      const deleteRedisRecordPromise = redisClient.del(orderDetails?.id);
       // const allLogProducts = cartList.filter(
       //   (cart) => cart?.productDetails?.type === "log"
       // );
-      await Promise.all([
-        updateCartsPromise,
-        updateOrderPromise,
-        updateProductPromise,
-        deleteRedisRecordPromise
-      ]);
+      await updateOrderProduct(orderDetails, paid_at);
       return res
         .status(200)
         .json(constructSuccessResponseBody({ message: "Payment verified" }));

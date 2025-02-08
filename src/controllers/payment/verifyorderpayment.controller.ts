@@ -14,6 +14,7 @@ import OrderSchema from "../../models/OrdersModel";
 import paystackApi from "../../apis/paystack.api";
 import { PaystackVerificationResponse } from "../../apis/paystack";
 import { Document } from "mongoose";
+import { updateOrderProduct } from "./completepayment.controller";
 
 const verifyPaymentController: ControllerType = async (req, res) => {
   const { params } = req;
@@ -42,7 +43,7 @@ const verifyPaymentController: ControllerType = async (req, res) => {
         .json(constructErrorResponseBody("Order details not found!"));
     }
 
-    if (!orderDetails?.paidAt || !orderDetails?.paymentReference) {
+    if (!orderDetails?.paymentReference) {
       return res
         .status(404)
         .json(constructErrorResponseBody("Payment details not found!"));
@@ -50,11 +51,16 @@ const verifyPaymentController: ControllerType = async (req, res) => {
     const { data } = await paystackApi.get<PaystackVerificationResponse>(
       `/transaction/verify/${orderDetails?.paymentReference}`
     );
-    const { channel } = data?.data || {};
+
+    const { channel, paid_at } = data?.data || {};
+    console.log(data);
     if (!data?.status) {
       return res
         .status(404)
-        .json(constructErrorResponseBody("Payment details not found!"));
+        .json(constructErrorResponseBody("Payment not successful!"));
+    }
+    if (!orderDetails?.paidAt) {
+      await updateOrderProduct(orderDetails, paid_at);
     }
     const dataToSend: OrderDetailsResponseType = {
       cartItems: (
