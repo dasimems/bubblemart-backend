@@ -97,7 +97,8 @@ const getOrdersController: ControllerType = async (req, res) => {
           ),
           isAvailable: false
         })),
-        checkoutDetails: checkoutDetails ? JSON.parse(checkoutDetails) : null
+        checkoutDetails: checkoutDetails ? JSON.parse(checkoutDetails) : null,
+        createdAt: order?.createdAt
       };
     });
 

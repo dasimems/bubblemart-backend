@@ -87,7 +87,8 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
       refundedAt: orderDetails?.refundedAt,
       contactInformation: orderDetails?.contactInformation,
       status: orderDetails?.status,
-      checkoutDetails
+      checkoutDetails,
+      createdAt: orderDetails?.createdAt
     };
 
     return res.status(200).json(data);

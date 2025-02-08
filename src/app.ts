@@ -29,7 +29,7 @@ const redisClient = createClient({ url: env?.REDIS_URL });
 
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 10,
+  max: 20,
   message: "Too many requests, please try again later.",
   statusCode: 429,
   headers: true

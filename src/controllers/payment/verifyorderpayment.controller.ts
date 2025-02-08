@@ -88,7 +88,8 @@ const verifyPaymentController: ControllerType = async (req, res) => {
       contactInformation: orderDetails?.contactInformation,
       status: orderDetails?.status,
       checkoutDetails: null,
-      paymentMethod: channel
+      paymentMethod: channel,
+      createdAt: orderDetails?.createdAt
     };
     res.status(200).json(constructSuccessResponseBody(dataToSend));
   } catch (error) {
