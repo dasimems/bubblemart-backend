@@ -2,7 +2,7 @@ import { MongoError } from "mongodb";
 import {
   constructErrorResponseBody,
   constructSuccessResponseBody,
-  getOrderEncryptKey
+  formatJoiErrors
 } from "../../modules";
 import {
   AuthenticationDestructuredType,
@@ -15,6 +15,12 @@ import OrderSchema from "../../models/OrdersModel";
 // import opayApi from "../../apis/opay.api";
 import paystackApi from "../../apis/paystack.api";
 import { redisClient } from "../../app";
+import Joi, { ValidationError } from "joi";
+import dotenv from "dotenv";
+dotenv.config();
+
+const { env } = process;
+const isProduction = env?.ENVIRONMENT === "production";
 
 export type OpayResponseType = {
   code: string;
@@ -40,12 +46,41 @@ export type OpayResponseType = {
   };
 };
 
+type CreatePaymentBodyType = {
+  callbackUrl: string;
+} & AuthenticationDestructuredType;
+
+const createPaymentJoiSchema = Joi.object<CreatePaymentBodyType>({
+  callbackUrl: Joi.string()
+    .uri({ scheme: isProduction ? ["https"] : ["https", "http"] })
+    .required()
+    .messages({
+      "string.empty": "Please upload your image",
+      "any.required": "You have to upload a image",
+      "string.uri": "Invalid image detected"
+    })
+}).unknown(true);
+
 const createPaymentController: ControllerType = async (req, res) => {
-  const { body, params, headers } = req;
-  const { host } = headers;
-  const { fetchedUserDetails } = body as AuthenticationDestructuredType;
+  const { body, params } = req;
+  const { fetchedUserDetails, callbackUrl } = body as CreatePaymentBodyType;
   if (!fetchedUserDetails) {
     return res.status(403).json(constructErrorResponseBody("Not allowed!"));
+  }
+  const { error } = createPaymentJoiSchema.validate(body, {
+    abortEarly: false
+  });
+  const errors = formatJoiErrors(error as ValidationError);
+
+  if (errors) {
+    return res
+      .status(400)
+      .json(
+        constructErrorResponseBody(
+          "Invalid or no callback url detected",
+          errors
+        )
+      );
   }
   const { id } = params || {};
 
@@ -97,17 +132,11 @@ const createPaymentController: ControllerType = async (req, res) => {
 
     const paymentInitiatedTime = new Date();
 
-    const orderEncryptionKey = getOrderEncryptKey(
-      orderDetails?.id,
-      orderDetails?.userId?.toString(),
-      new Date(paymentInitiatedTime).getTime()
-    );
-
     const paymentBody = {
       email: fetchedUserDetails?.email,
       amount: totalPrice,
       currency: "NGN",
-      callback_url: `https://${host}/v1/payment/${orderDetails?.id}/${orderEncryptionKey}`
+      callback_url: callbackUrl
     };
 
     const { data } =

@@ -6,7 +6,7 @@ const paymentRoute = Router();
 
 paymentRoute.route("/:id").post(createPaymentController);
 paymentRoute
-  .route("/:orderId/:auth")
+  .route("/paystack/webhook")
   .post(completePaymentController)
   .get(completePaymentController);
 

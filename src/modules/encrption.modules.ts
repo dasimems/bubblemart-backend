@@ -3,15 +3,13 @@ import dotenv from "dotenv";
 import { JWTContentType } from "../utils/types";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
+import { PaystackWebhookEvent } from "../apis/paystack";
 
 dotenv.config();
 
 const { env } = process;
 const { JWT_PRIVATE_KEY } = env;
 
-const algorithm = "aes-256-cbc";
-const key = crypto.randomBytes(32); // 32 bytes for AES-256
-const iv = crypto.randomBytes(16);
 const saltRounds = 10;
 
 export const encryptToken = (body: JWTContentType) => {
@@ -37,4 +35,14 @@ export const encryptToken = (body: JWTContentType) => {
   },
   compareHashedPassword = async (password: string, hashedPassword: string) => {
     return await bcrypt.compare(generatePassword(password), hashedPassword);
+  },
+  verifyPaystackTransaction = (
+    eventData: PaystackWebhookEvent,
+    signature: string
+  ): boolean => {
+    const hmac = crypto.createHmac("sha512", env?.PAYSTACK_SECRET_KEY || "");
+    const expectedSignature = hmac
+      .update(JSON.stringify(eventData))
+      .digest("hex");
+    return expectedSignature === signature;
   };
