@@ -40,7 +40,13 @@ const getOrdersController: ControllerType = async (req, res) => {
   }
   try {
     const formattedPage = parseInt(page?.toString());
-    const totalProducts = await OrderSchema.countDocuments();
+    const totalProducts = await OrderSchema.countDocuments(
+      !isAdmin
+        ? {
+            userId: fetchedUserDetails.id
+          }
+        : {}
+    );
     const maxPage = Math.ceil(totalProducts / MAX_RETURN_ITEM_COUNT) || 1;
     const host = req.hostname || req.get("host") || "";
     const route = req.path;
@@ -51,13 +57,13 @@ const getOrdersController: ControllerType = async (req, res) => {
     }
     const skip = MAX_RETURN_ITEM_COUNT * (formattedPage - 1);
 
-    const orderPromise = OrderSchema.find(
+    let orderPromise = OrderSchema.find(
       !isAdmin
         ? {
             userId: fetchedUserDetails.id
           }
         : {}
-    ).populate<CartDetailsType>({
+    ).populate<CartDetailsType | UserDetailsType>({
       path: "cartItems",
       model: databaseKeys.carts,
       select: "-__v",
@@ -67,10 +73,10 @@ const getOrdersController: ControllerType = async (req, res) => {
     });
 
     if (isAdmin) {
-      orderPromise.populate<UserDetailsType>({
+      orderPromise = orderPromise?.populate<UserDetailsType>({
         path: "userId",
         model: databaseKeys.users,
-        select: "-__v",
+        select: "-password -__v",
         options: {
           strictPopulate: false // Ensures no errors if the product doesn't exist
         }
