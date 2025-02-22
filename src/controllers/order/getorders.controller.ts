@@ -114,6 +114,7 @@ const getOrdersController: ControllerType = async (req, res) => {
         UserDetailsType
       > &
         UserDetailsType;
+      console.log("order user details", userDetails);
       return {
         id: order?.id,
         paidAt: order?.paidAt,
