@@ -1,5 +1,9 @@
 import { MongoError } from "mongodb";
-import { constructErrorResponseBody, generateAmount } from "../../modules";
+import {
+  constructErrorResponseBody,
+  constructSuccessResponseBody,
+  generateAmount
+} from "../../modules";
 import {
   AuthenticationDestructuredType,
   CartDetailsType,
@@ -91,7 +95,7 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
       createdAt: orderDetails?.createdAt
     };
 
-    return res.status(200).json(data);
+    return res.status(200).json(constructSuccessResponseBody(data));
   } catch (error) {
     return res
       .status(500)
