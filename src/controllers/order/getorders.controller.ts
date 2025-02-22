@@ -114,7 +114,6 @@ const getOrdersController: ControllerType = async (req, res) => {
         UserDetailsType
       > &
         UserDetailsType;
-      console.log("order user details", userDetails);
       return {
         id: order?.id,
         paidAt: order?.paidAt,
@@ -145,8 +144,7 @@ const getOrdersController: ControllerType = async (req, res) => {
         user:
           isAdmin &&
           typeof userDetails !== "string" &&
-          typeof userDetails !== "undefined" &&
-          typeof userDetails !== typeof order?.userId
+          typeof userDetails !== "undefined"
             ? {
                 avatar: userDetails?.avatar,
                 createdAt: userDetails?.createdAt,
