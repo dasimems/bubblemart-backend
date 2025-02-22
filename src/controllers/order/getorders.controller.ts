@@ -25,7 +25,8 @@ const getOrdersController: ControllerType = async (req, res) => {
   const { fetchedUserDetails } = body as AuthenticationDestructuredType;
 
   let { page } = query;
-  const { isAdmin } = query;
+  const { isAdmin: isAdminQuery } = query;
+  const isAdmin = JSON.parse(isAdminQuery?.toString() || "false");
 
   if (
     !fetchedUserDetails ||
@@ -49,7 +50,7 @@ const getOrdersController: ControllerType = async (req, res) => {
     }
     const skip = MAX_RETURN_ITEM_COUNT * (formattedPage - 1);
     const orderList = await OrderSchema.find(
-      isAdmin
+      !isAdmin
         ? {
             userId: fetchedUserDetails.id
           }
