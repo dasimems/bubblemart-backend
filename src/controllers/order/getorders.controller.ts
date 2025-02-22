@@ -10,7 +10,8 @@ import {
   AuthenticationDestructuredType,
   CartDetailsType,
   ControllerType,
-  OrderDetailsResponseType
+  OrderDetailsResponseType,
+  UserDetailsType
 } from "../../utils/types";
 import {
   databaseKeys,
@@ -49,7 +50,36 @@ const getOrdersController: ControllerType = async (req, res) => {
       return res.status(416).json(constructErrorResponseBody("Out of bound!"));
     }
     const skip = MAX_RETURN_ITEM_COUNT * (formattedPage - 1);
-    const orderList = await OrderSchema.find(
+
+    const orderPromise = OrderSchema.find(
+      !isAdmin
+        ? {
+            userId: fetchedUserDetails.id
+          }
+        : {}
+    ).populate<CartDetailsType>({
+      path: "cartItems",
+      model: databaseKeys.carts,
+      select: "-__v",
+      options: {
+        strictPopulate: false // Ensures no errors if the product doesn't exist
+      }
+    });
+
+    if (isAdmin) {
+      orderPromise.populate<UserDetailsType>({
+        path: "userId",
+        model: databaseKeys.users,
+        select: "-__v",
+        options: {
+          strictPopulate: false // Ensures no errors if the product doesn't exist
+        }
+      });
+    }
+    const orderList = await orderPromise
+      .skip(skip)
+      .limit(MAX_RETURN_ITEM_COUNT)
+      .exec(); /* OrderSchema.find(
       !isAdmin
         ? {
             userId: fetchedUserDetails.id
@@ -66,7 +96,7 @@ const getOrdersController: ControllerType = async (req, res) => {
       })
       .skip(skip)
       .limit(MAX_RETURN_ITEM_COUNT)
-      .exec();
+      .exec(); */
     const orderCheckoutDetails = await Promise.all(
       orderList.map((order) => redisClient.get(order?.id))
     );
