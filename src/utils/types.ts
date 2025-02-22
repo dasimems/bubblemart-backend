@@ -202,6 +202,7 @@ export type OrderDetailsResponseType = {
   cartItems: CartDetailsResponseType[];
   paymentMethod?: string;
   checkoutDetails: PaystackInitiateTransactionResponseType | null;
+  user?: UserDetailsResponseType;
 } & Omit<
   OrderDetailsType,
   "lastUpdatedAt" | "updates" | "userId" | "cartItems"

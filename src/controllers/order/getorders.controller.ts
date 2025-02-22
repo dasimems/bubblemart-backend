@@ -102,7 +102,12 @@ const getOrdersController: ControllerType = async (req, res) => {
     );
     const orders: OrderDetailsResponseType[] = orderList.map((order, index) => {
       const checkoutDetails = orderCheckoutDetails[index];
-
+      const userDetails = order?.userId as unknown as Document<
+        string,
+        unknown,
+        UserDetailsType
+      > &
+        UserDetailsType;
       return {
         id: order?.id,
         paidAt: order?.paidAt,
@@ -129,7 +134,30 @@ const getOrdersController: ControllerType = async (req, res) => {
           isAvailable: false
         })),
         checkoutDetails: checkoutDetails ? JSON.parse(checkoutDetails) : null,
-        createdAt: order?.createdAt
+        createdAt: order?.createdAt,
+        user:
+          isAdmin &&
+          typeof userDetails !== "string" &&
+          typeof userDetails !== "undefined" &&
+          typeof userDetails !== typeof order?.userId
+            ? {
+                avatar: userDetails?.avatar,
+                createdAt: userDetails?.createdAt,
+                email: userDetails?.email,
+                id: userDetails?.id?.toString() as string,
+                name: userDetails?.name,
+                role: userDetails?.role,
+                updatedAt: userDetails?.updatedAt
+              }
+            : {
+                avatar: fetchedUserDetails?.avatar,
+                createdAt: fetchedUserDetails?.createdAt,
+                email: fetchedUserDetails?.email,
+                id: fetchedUserDetails?.id?.toString() as string,
+                name: fetchedUserDetails?.name,
+                role: fetchedUserDetails?.role,
+                updatedAt: fetchedUserDetails?.updatedAt
+              }
       };
     });
 
