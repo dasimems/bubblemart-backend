@@ -10,8 +10,9 @@ const userRoute = Router();
 userRoute
   .route("/")
   .delete(deleteUserController)
-  .get(getUserDetailsController) 
+  .get(getUserDetailsController)
   .patch(updateUserController);
+userRoute.route("/:id").get(getUserDetailsController);
 userRoute.route(allPaths.logout).delete(logoutController);
 
 export default userRoute;
