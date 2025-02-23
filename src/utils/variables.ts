@@ -5,6 +5,7 @@ export const routeGroup = {
     address: "/address",
     order: "/order",
     user: "/user",
+    users: "/users",
     upload: "/upload",
     payment: "/payment"
   },

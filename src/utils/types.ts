@@ -189,9 +189,10 @@ export type CartDetailsResponseType = {
   id: string;
   totalPrice: AmountType;
   isAvailable?: boolean;
+  createdAt?: Date;
 } & Omit<
   CartDetailsType,
-  "lastUpdatedAt" | "updates" | "userId" | "paidAt" | "orderId"
+  "createdAt" | "lastUpdatedAt" | "updates" | "userId" | "paidAt" | "orderId"
 >;
 export type CartResponseType = {
   carts: CartDetailsResponseType[];

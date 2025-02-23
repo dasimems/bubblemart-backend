@@ -9,11 +9,13 @@ import orderRoute from "./order.route";
 import userRoute from "./user.route";
 import uploadRoute from "./upload.route";
 import paymentRoute from "./payment.route";
+import usersRoute from "./users.route";
 const v1Router = express.Router();
 
 v1Router.use(routeGroup.auth, authRouter);
 v1Router.use(routeGroup.product, productRoute);
 v1Router.use(routeGroup.user, authenticationMiddleware, userRoute);
+v1Router.use(routeGroup.users, authenticationMiddleware, usersRoute);
 v1Router.use(routeGroup.cart, authenticationMiddleware, cartRoute);
 v1Router.use(routeGroup.order, authenticationMiddleware, orderRoute);
 v1Router.use(routeGroup.address, authenticationMiddleware, addressRoute);
