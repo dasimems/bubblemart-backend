@@ -168,6 +168,10 @@ export type AuthenticationDestructuredType = {
 
 export type UserDetailsResponseType = {
   id: string;
+  totalCarts?: number;
+  totalOrders?: number;
+  totalCompletedOrders?: number;
+  lastMadeOrder?: OrderDetailsResponseType;
 } & Omit<UserDetailsType, "password" | "updates">;
 
 export type LogDetailsResponseType = {
@@ -198,16 +202,17 @@ export type CartResponseType = {
   carts: CartDetailsResponseType[];
   isAddressNeeded: boolean;
 };
-export type OrderDetailsResponseType = {
+export interface OrderDetailsResponseType
+  extends Omit<
+    OrderDetailsType,
+    "lastUpdatedAt" | "updates" | "userId" | "cartItems"
+  > {
   id: string;
   cartItems: CartDetailsResponseType[];
   paymentMethod?: string;
   checkoutDetails: PaystackInitiateTransactionResponseType | null;
   user?: UserDetailsResponseType;
-} & Omit<
-  OrderDetailsType,
-  "lastUpdatedAt" | "updates" | "userId" | "cartItems"
->;
+}
 
 export type AllResponseType =
   | UserDetailsResponseType
