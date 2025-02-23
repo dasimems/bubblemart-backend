@@ -8,7 +8,8 @@ import {
   AuthenticationDestructuredType,
   CartDetailsType,
   ControllerType,
-  PaystackInitiateTransactionResponseType
+  PaystackInitiateTransactionResponseType,
+  UserDetailsType
 } from "../../utils/types";
 import { databaseKeys, defaultErrorMessage } from "../../utils/variables";
 import OrderSchema from "../../models/OrdersModel";
@@ -35,9 +36,9 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
   }
 
   try {
-    const orderDetails = await OrderSchema.findById(
-      id
-    ).populate<CartDetailsType>({
+    let orderDetailsPromise = OrderSchema.findById(id).populate<
+      CartDetailsType | UserDetailsType
+    >({
       path: "cartItems",
       model: databaseKeys.carts,
       select: "-__v",
@@ -45,6 +46,19 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
         strictPopulate: false // Ensures no errors if the product doesn't exist
       }
     });
+
+    if (isAdmin) {
+      orderDetailsPromise = orderDetailsPromise.populate<UserDetailsType>({
+        path: "userId",
+        model: databaseKeys.users,
+        select: "-password -__v",
+        options: {
+          strictPopulate: false // Ensures no errors if the product doesn't exist
+        }
+      });
+    }
+
+    const orderDetails = await orderDetailsPromise;
     if (!orderDetails) {
       return res
         .status(404)
@@ -65,6 +79,13 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
         checkoutDetails = JSON.parse(paymentDetails);
       }
     }
+
+    const userDetails = orderDetails?.userId as unknown as Document<
+      string,
+      unknown,
+      UserDetailsType
+    > &
+      UserDetailsType;
 
     const data: OrderDetailsResponseType = {
       cartItems: (
@@ -92,7 +113,29 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
       contactInformation: orderDetails?.contactInformation,
       status: orderDetails?.status,
       checkoutDetails,
-      createdAt: orderDetails?.createdAt
+      createdAt: orderDetails?.createdAt,
+      user:
+        isAdmin &&
+        typeof userDetails !== "string" &&
+        typeof userDetails !== "undefined"
+          ? {
+              avatar: userDetails?.avatar,
+              createdAt: userDetails?.createdAt,
+              email: userDetails?.email,
+              id: userDetails?.id?.toString() as string,
+              name: userDetails?.name,
+              role: userDetails?.role,
+              updatedAt: userDetails?.updatedAt
+            }
+          : {
+              avatar: fetchedUserDetails?.avatar,
+              createdAt: fetchedUserDetails?.createdAt,
+              email: fetchedUserDetails?.email,
+              id: fetchedUserDetails?.id?.toString() as string,
+              name: fetchedUserDetails?.name,
+              role: fetchedUserDetails?.role,
+              updatedAt: fetchedUserDetails?.updatedAt
+            }
     };
 
     return res.status(200).json(constructSuccessResponseBody(data));
