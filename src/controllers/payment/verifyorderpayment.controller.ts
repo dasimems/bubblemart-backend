@@ -17,8 +17,18 @@ import { Document } from "mongoose";
 import { updateOrderProduct } from "./completepayment.controller";
 
 const verifyPaymentController: ControllerType = async (req, res) => {
+  const { body, query } = req;
+  const { fetchedUserDetails } = body;
+  const { isAdmin } = query;
   const { params } = req;
   const { id } = params || {};
+
+  if (
+    !fetchedUserDetails ||
+    (isAdmin && fetchedUserDetails?.role !== "ADMIN")
+  ) {
+    return res.status(403).json(constructErrorResponseBody("Not allowed!"));
+  }
 
   if (!id) {
     return res
@@ -42,6 +52,12 @@ const verifyPaymentController: ControllerType = async (req, res) => {
         .status(404)
         .json(constructErrorResponseBody("Order details not found!"));
     }
+    if (
+      !isAdmin &&
+      orderDetails?.userId?.toString() !== fetchedUserDetails?.id?.toString()
+    ) {
+      return res.status(403).json("Action not permitted");
+    }
 
     if (!orderDetails?.paymentReference) {
       return res
@@ -53,7 +69,6 @@ const verifyPaymentController: ControllerType = async (req, res) => {
     );
 
     const { channel, paid_at } = data?.data || {};
-    console.log(data);
     if (!data?.status) {
       return res
         .status(404)
