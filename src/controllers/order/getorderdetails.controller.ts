@@ -103,6 +103,7 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
           (details?.quantity || 0) *
             (details?.productDetails?.amount?.whole || 0)
         ),
+        createdAt: details?.createdAt,
         isAvailable: false
       })),
       id: orderDetails?.id,

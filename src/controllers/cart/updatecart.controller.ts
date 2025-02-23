@@ -102,6 +102,7 @@ const updateCartController: ControllerType = async (req, res) => {
       totalPrice: generateAmount(
         (details?.quantity || 0) * (details?.productDetails?.amount?.whole || 0)
       ),
+      createdAt: details?.createdAt,
       isAvailable: details.quantity <= productDetails.quantity
     };
     return res.status(200).json(constructSuccessResponseBody(data));

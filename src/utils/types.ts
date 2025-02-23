@@ -191,7 +191,7 @@ export type CartDetailsResponseType = {
   isAvailable?: boolean;
 } & Omit<
   CartDetailsType,
-  "createdAt" | "lastUpdatedAt" | "updates" | "userId" | "paidAt" | "orderId"
+  "lastUpdatedAt" | "updates" | "userId" | "paidAt" | "orderId"
 >;
 export type CartResponseType = {
   carts: CartDetailsResponseType[];
