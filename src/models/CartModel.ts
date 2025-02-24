@@ -16,8 +16,7 @@ const cartSchema = new Schema<CartDetailsType>({
     id: {
       type: Schema.Types.ObjectId,
       ref: databaseKeys.products,
-      required: true,
-      index: true
+      required: true
     },
     name: {
       type: String,
