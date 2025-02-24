@@ -1,0 +1,38 @@
+config:
+  target: https://api.bubblemart.shop/v1
+  # phases:
+  #   - duration: 20
+  #     arrivalRate: 5
+  #     name: Startup phase
+  #   - duration: 5
+  #     arrivalRate: 20
+  #     name: Peak phase
+  #   - duration: 10
+  #     arrivalRate: 2
+  #     name: Slow-down phase
+  phases:
+    - duration: 30
+      arrivalRate: 100
+      name: Ramp-up phase
+    - duration: 30
+      arrivalRate: 200
+      name: Peak phase
+    - duration: 20
+      arrivalRate: 50
+      name: Cool-down phase
+  http:
+    headers:
+      Origin: "https://bubblemart.shop"
+  plugins:
+    ensure:
+        thresholds:
+          - http.response_time.max: 1000
+    expect: {}
+scenarios:
+  - flow:
+    - get:
+        url: "/product"
+        headers:
+          Origin: "https://bubblemart.shop"
+        expect:
+          - statusCode: 200

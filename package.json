@@ -7,7 +7,8 @@
     "test": "jest",
     "build": "npx tsc",
     "start": "npm run build && node dist/index.js",
-    "dev": "nodemon src/index.ts"
+    "dev": "nodemon src/index.ts",
+    "load-test": "artillery run load.yml"
   },
   "author": "",
   "license": "ISC",
