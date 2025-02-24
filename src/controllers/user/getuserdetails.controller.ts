@@ -42,7 +42,7 @@ const getUserDetailsController: ControllerType = async (req, res) => {
   }
 
   try {
-    const userDetailsPromise = UserModel.findById({ id: userId });
+    const userDetailsPromise = UserModel.findById({ id: userId }).lean();
     const totalCartPromise = CartSchema.countDocuments({
       userId,
       $or: [{ orderId: { $exists: false } }, { orderId: null }]
@@ -70,7 +70,8 @@ const getUserDetailsController: ControllerType = async (req, res) => {
         options: {
           strictPopulate: false // Ensures no errors if the product doesn't exist
         }
-      });
+      })
+      .lean();
     const [
       userDetails,
       totalCarts,
@@ -94,7 +95,7 @@ const getUserDetailsController: ControllerType = async (req, res) => {
       avatar: userDetails?.avatar,
       createdAt: userDetails?.createdAt,
       email: userDetails?.email,
-      id: userDetails?.id?.toString() as string,
+      id: userDetails?._id?.toString() as string,
       name: userDetails?.name,
       role: userDetails?.role,
       updatedAt: userDetails?.updatedAt,
@@ -106,11 +107,13 @@ const getUserDetailsController: ControllerType = async (req, res) => {
       let checkoutDetails: PaystackInitiateTransactionResponseType | null =
         null;
       const doesPaymentDetailsExist = await redisClient.exists(
-        lastOrderMade?.id
+        lastOrderMade?._id?.toString()
       );
 
       if (doesPaymentDetailsExist) {
-        const paymentDetails = await redisClient.get(lastOrderMade?.id);
+        const paymentDetails = await redisClient.get(
+          lastOrderMade?._id?.toString()
+        );
         if (paymentDetails) {
           checkoutDetails = JSON.parse(paymentDetails);
         }
@@ -134,7 +137,7 @@ const getUserDetailsController: ControllerType = async (req, res) => {
           createdAt: details?.createdAt,
           isAvailable: false
         })),
-        id: lastOrderMade?.id,
+        id: lastOrderMade?._id?.toString(),
         paidAt: lastOrderMade?.paidAt,
         paymentInitiatedAt: lastOrderMade?.paymentInitiatedAt,
         paymentReference: lastOrderMade?.paymentReference,

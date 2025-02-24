@@ -56,7 +56,7 @@ export const registerController: ControllerType = async (req, res) => {
         .json(constructErrorResponseBody("Invalid values detected!", errors));
     }
     const { email, password, name } = body as RegisterBodyType;
-    const user = await UserModel.findOne({ email });
+    const user = await UserModel.exists({ email });
 
     if (user) {
       return res

@@ -27,21 +27,25 @@ const getAddressDetailsController: ControllerType = async (req, res) => {
   }
 
   try {
-    const addressDetails = await AddressSchema.findById(id);
+    const addressDetails = await AddressSchema.findById(id).lean();
     if (!addressDetails) {
       return res
         .status(404)
         .json(constructErrorResponseBody("Address not found"));
     }
 
-    if(addressDetails.userId !== fetchedUserDetails.id){
-        return res.status(403).json(constructErrorResponseBody("Operation not allowed!"))
+    if (
+      addressDetails.userId?.toString() !== fetchedUserDetails.id?.toString()
+    ) {
+      return res
+        .status(403)
+        .json(constructErrorResponseBody("Operation not allowed!"));
     }
 
     const data: AddressDetailsResponseType = {
       address: addressDetails.address,
       coordinates: addressDetails.coordinates,
-      id: addressDetails.id,
+      id: addressDetails._id?.toString(),
       createdAt: addressDetails.createdAt
     };
     return res.status(201).json(constructSuccessResponseBody(data));

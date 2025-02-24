@@ -42,12 +42,12 @@ const updateCartController: ControllerType = async (req, res) => {
   try {
     const { productId, quantity } = body as AddToCartBodyType;
     const [productDetails, cartDetails] = await Promise.all([
-      ProductSchema.findById(productId),
+      ProductSchema.findById(productId).lean(),
       CartSchema.findOne({
         "productDetails.id": productId,
         userId: fetchedUserDetails.id,
         $or: [{ orderId: { $exists: false } }, { orderId: null }]
-      })
+      }).lean()
     ]);
 
     if (!cartDetails) {
@@ -58,7 +58,7 @@ const updateCartController: ControllerType = async (req, res) => {
 
     if (!productDetails) {
       if (cartDetails) {
-        await CartSchema.findByIdAndDelete(cartDetails.id);
+        await CartSchema.findByIdAndDelete(cartDetails._id);
       }
       return res
         .status(404)
@@ -72,7 +72,7 @@ const updateCartController: ControllerType = async (req, res) => {
     }
 
     const details = await CartSchema.findByIdAndUpdate(
-      cartDetails.id,
+      cartDetails._id,
       {
         quantity,
         $push: {
@@ -89,14 +89,14 @@ const updateCartController: ControllerType = async (req, res) => {
       {
         new: true
       }
-    );
+    ).lean();
     if (!details) {
       return res
         .status(404)
         .json(constructErrorResponseBody("Cart doesn't exist any longer!"));
     }
     const data: CartDetailsResponseType = {
-      id: details?.id,
+      id: details?._id?.toString(),
       productDetails: details?.productDetails,
       quantity: details?.quantity,
       totalPrice: generateAmount(

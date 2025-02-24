@@ -58,7 +58,7 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
       });
     }
 
-    const orderDetails = await orderDetailsPromise;
+    const orderDetails = await orderDetailsPromise.lean();
     if (!orderDetails) {
       return res
         .status(404)
@@ -71,10 +71,14 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
       return res.status(403).json("Action not permitted");
     }
     let checkoutDetails: PaystackInitiateTransactionResponseType | null = null;
-    const doesPaymentDetailsExist = await redisClient.exists(orderDetails?.id);
+    const doesPaymentDetailsExist = await redisClient.exists(
+      orderDetails?._id?.toString()
+    );
 
     if (doesPaymentDetailsExist) {
-      const paymentDetails = await redisClient.get(orderDetails?.id);
+      const paymentDetails = await redisClient.get(
+        orderDetails?._id?.toString()
+      );
       if (paymentDetails) {
         checkoutDetails = JSON.parse(paymentDetails);
       }
@@ -106,7 +110,7 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
         createdAt: details?.createdAt,
         isAvailable: false
       })),
-      id: orderDetails?.id,
+      id: orderDetails?._id?.toString(),
       paidAt: orderDetails?.paidAt,
       paymentInitiatedAt: orderDetails?.paymentInitiatedAt,
       paymentReference: orderDetails?.paymentReference,

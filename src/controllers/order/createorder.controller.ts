@@ -158,7 +158,7 @@ const createOrderController: ControllerType = async (req, res) => {
               ]
             }
           }
-        })
+        }).lean()
       )
     );
     const data: OrderDetailsResponseType = {

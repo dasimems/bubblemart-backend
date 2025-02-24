@@ -26,14 +26,16 @@ const getCartItemsController: ControllerType = async (req, res) => {
     const fetchCartPromise = CartSchema.find({
       userId: fetchedUserDetails.id,
       $or: [{ orderId: { $exists: false } }, { orderId: null }]
-    }).populate<ProductDetailsType>({
-      path: "productDetails.id",
-      model: databaseKeys.products, // Replace 'Product' with your actual Product model name
-      select: "-__v", // Exclude unnecessary fields if needed
-      options: {
-        strictPopulate: false // Ensures no errors if the product doesn't exist
-      }
-    });
+    })
+      .populate<ProductDetailsType>({
+        path: "productDetails.id",
+        model: databaseKeys.products, // Replace 'Product' with your actual Product model name
+        select: "-__v", // Exclude unnecessary fields if needed
+        options: {
+          strictPopulate: false // Ensures no errors if the product doesn't exist
+        }
+      })
+      .lean();
     const availableGiftCountPromise = CartSchema.countDocuments({
       userId: fetchedUserDetails.id,
       $or: [{ orderId: { $exists: false } }, { orderId: null }],
@@ -53,12 +55,12 @@ const getCartItemsController: ControllerType = async (req, res) => {
 
     Promise.all(
       cartItemsWithInvalidProduct.map((details) =>
-        CartSchema.findOneAndDelete(details.id)
+        CartSchema.findOneAndDelete(details._id)
       )
     );
 
     const carts = cartItemsWithValidProduct?.map((details) => ({
-      id: details?.id,
+      id: details?._id?.toString(),
       productDetails: {
         ...details?.productDetails,
         id: (

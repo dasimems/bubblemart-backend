@@ -68,7 +68,7 @@ const updateProductController: ControllerType = async (req, res) => {
   }
 
   try {
-    const productDetails = await ProductSchema.findById(id);
+    const productDetails = await ProductSchema.exists({ _id: id });
 
     if (!productDetails) {
       return res
@@ -134,7 +134,7 @@ const updateProductController: ControllerType = async (req, res) => {
         }
       },
       { new: true }
-    );
+    ).lean();
     if (!newProductDetails) {
       return res
         .status(500)
@@ -147,7 +147,7 @@ const updateProductController: ControllerType = async (req, res) => {
     const data: ProductDetailsResponseType = {
       amount: newProductDetails?.amount,
       description: newProductDetails?.description,
-      id: newProductDetails?.id,
+      id: newProductDetails?._id?.toString(),
       image: newProductDetails?.image,
       name: newProductDetails?.name,
       quantity: newProductDetails?.quantity,

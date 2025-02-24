@@ -42,7 +42,7 @@ const subtractFromCartController: ControllerType = async (req, res) => {
   try {
     const { productId, quantity } = body as AddToCartBodyType;
     const [productDetails, cartDetails] = await Promise.all([
-      ProductSchema.findById(productId),
+      ProductSchema.findById(productId).lean(),
       CartSchema.findOne({
         "productDetails.id": productId,
         userId: fetchedUserDetails.id,
@@ -51,7 +51,7 @@ const subtractFromCartController: ControllerType = async (req, res) => {
     ]);
     if (!productDetails) {
       if (cartDetails) {
-        await CartSchema.findByIdAndDelete(cartDetails.id);
+        await CartSchema.findByIdAndDelete(cartDetails._id);
       }
       return res
         .status(404)

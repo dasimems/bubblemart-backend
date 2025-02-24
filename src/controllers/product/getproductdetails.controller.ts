@@ -16,7 +16,7 @@ const getProductDetails: ControllerType = async (req, res) => {
   }
 
   try {
-    const productDetails = await ProductSchema.findById(productId);
+    const productDetails = await ProductSchema.findById(productId).lean();
 
     if (!productDetails) {
       return res
@@ -24,7 +24,7 @@ const getProductDetails: ControllerType = async (req, res) => {
         .json(constructErrorResponseBody("Product not found"));
     }
 
-    const { amount, description, name, type, quantity, image, id, createdAt } =
+    const { amount, description, name, type, quantity, image, _id, createdAt } =
       productDetails;
     const data: ProductDetailsResponseType = {
       amount,
@@ -33,7 +33,7 @@ const getProductDetails: ControllerType = async (req, res) => {
       type,
       quantity,
       image,
-      id,
+      id: _id?.toString(),
       createdAt
     };
     return res.status(200).json(constructSuccessResponseBody(data));

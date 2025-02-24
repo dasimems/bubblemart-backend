@@ -36,7 +36,7 @@ export const updateOrderProduct = (orderDetails, paidAt) => {
             ]
           }
         }
-      })
+      }).lean()
     )
   );
   const updateOrderPromise = OrderSchema.findByIdAndUpdate(orderDetails?.id, {
@@ -53,7 +53,7 @@ export const updateOrderProduct = (orderDetails, paidAt) => {
         ]
       }
     }
-  });
+  }).lean();
   const cartList = (
     orderDetails?.cartItems as unknown as CartDetailsType[]
   ).filter((cart) => cart?.productDetails?.id);
@@ -79,7 +79,7 @@ export const updateOrderProduct = (orderDetails, paidAt) => {
             }
           }
         }
-      })
+      }).lean()
     )
   );
 
@@ -108,14 +108,16 @@ const completePaymentController: ControllerType = async (req, res) => {
 
       const orderDetails = await OrderSchema.findOne({
         paymentReference: reference
-      }).populate<CartDetailsType>({
-        path: "cartItems",
-        model: databaseKeys.carts,
-        select: "-__v",
-        options: {
-          strictPopulate: false // Ensures no errors if the product doesn't exist
-        }
-      });
+      })
+        .populate<CartDetailsType>({
+          path: "cartItems",
+          model: databaseKeys.carts,
+          select: "-__v",
+          options: {
+            strictPopulate: false // Ensures no errors if the product doesn't exist
+          }
+        })
+        .lean();
 
       if (!orderDetails) {
         return res

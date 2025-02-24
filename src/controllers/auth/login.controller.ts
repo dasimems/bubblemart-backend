@@ -45,7 +45,7 @@ export const loginController: ControllerType = async (req, res) => {
   const email = bodyEmail?.toLowerCase();
 
   try {
-    const user = await UserModel.findOne({ email });
+    const user = await UserModel.findOne({ email }).lean();
     if (!user) {
       return res
         .status(401)
@@ -53,7 +53,7 @@ export const loginController: ControllerType = async (req, res) => {
     }
     const {
       password: userPassword,
-      id,
+      _id,
       avatar,
       updatedAt,
       createdAt,
@@ -73,7 +73,7 @@ export const loginController: ControllerType = async (req, res) => {
       ipAddress,
       createdAt: new Date(),
       expiredAt: calculateTokenExpirationDate(),
-      id: id,
+      id: _id?.toString(),
       role: role || "USER"
     });
 
@@ -88,7 +88,7 @@ export const loginController: ControllerType = async (req, res) => {
       avatar,
       createdAt,
       email,
-      id,
+      id: _id?.toString(),
       name,
       role,
       updatedAt

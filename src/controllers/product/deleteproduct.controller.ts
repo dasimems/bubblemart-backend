@@ -24,7 +24,7 @@ const deleteProductController: ControllerType = async (req, res) => {
       .json(constructErrorResponseBody("Product ID must be specified!"));
   }
   try {
-    const productDetails = await ProductSchema.findById(id);
+    const productDetails = await ProductSchema.exists({ _id: id });
 
     if (!productDetails) {
       return res
@@ -32,7 +32,7 @@ const deleteProductController: ControllerType = async (req, res) => {
         .json(constructErrorResponseBody("Product not found"));
     }
 
-    await ProductSchema.findByIdAndDelete(id);
+    await ProductSchema.findByIdAndDelete(id).lean();
     return res.status(204).end();
   } catch (error) {
     return res

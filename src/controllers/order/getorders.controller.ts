@@ -85,6 +85,7 @@ const getOrdersController: ControllerType = async (req, res) => {
     const orderList = await orderPromise
       .skip(skip)
       .limit(MAX_RETURN_ITEM_COUNT)
+      .lean()
       .exec(); /* OrderSchema.find(
       !isAdmin
         ? {
@@ -104,7 +105,7 @@ const getOrdersController: ControllerType = async (req, res) => {
       .limit(MAX_RETURN_ITEM_COUNT)
       .exec(); */
     const orderCheckoutDetails = await Promise.all(
-      orderList.map((order) => redisClient.get(order?.id))
+      orderList.map((order) => redisClient.get(order?._id?.toString()))
     );
     const orders: OrderDetailsResponseType[] = orderList.map((order, index) => {
       const checkoutDetails = orderCheckoutDetails[index];
@@ -115,7 +116,7 @@ const getOrdersController: ControllerType = async (req, res) => {
       > &
         UserDetailsType;
       return {
-        id: order?.id,
+        id: order?._id?.toString(),
         paidAt: order?.paidAt,
         paymentInitiatedAt: order?.paymentInitiatedAt,
         paymentReference: order?.paymentReference,

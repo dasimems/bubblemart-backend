@@ -35,14 +35,16 @@ const updateAddressController: ControllerType = async (req, res) => {
       .json(constructErrorResponseBody("Invalid fields detected", errors));
   }
   try {
-    const addressDetails = await AddressSchema.findById(id);
+    const addressDetails = await AddressSchema.findById(id).lean();
     if (!addressDetails) {
       return res
         .status(404)
         .json(constructErrorResponseBody("Address not found"));
     }
 
-    if (addressDetails.userId !== fetchedUserDetails.id) {
+    if (
+      addressDetails.userId?.toString() !== fetchedUserDetails.id?.toString()
+    ) {
       return res
         .status(403)
         .json(constructErrorResponseBody("Operation not allowed!"));
@@ -70,7 +72,7 @@ const updateAddressController: ControllerType = async (req, res) => {
         }
       },
       { new: true }
-    );
+    ).lean();
     if (!newAddressDetails) {
       return res
         .status(500)
@@ -83,7 +85,7 @@ const updateAddressController: ControllerType = async (req, res) => {
     const data: AddressDetailsResponseType = {
       address: newAddressDetails.address,
       coordinates: newAddressDetails.coordinates,
-      id: newAddressDetails.id,
+      id: newAddressDetails._id?.toString(),
       createdAt: newAddressDetails.createdAt
     };
     return res.status(200).json(constructSuccessResponseBody(data));

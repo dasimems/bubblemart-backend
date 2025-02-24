@@ -50,7 +50,7 @@ const addToCartController: ControllerType = async (req, res) => {
   try {
     const { productId, quantity } = body as AddToCartBodyType;
     const [productDetails, cartDetails] = await Promise.all([
-      ProductSchema.findById(productId),
+      ProductSchema.findById(productId).lean(),
       CartSchema.findOne({
         "productDetails.id": productId,
         userId: fetchedUserDetails.id,
@@ -82,14 +82,14 @@ const addToCartController: ControllerType = async (req, res) => {
         }
       ];
       await cartDetails.save();
-      const details = await CartSchema.findById(cartDetails.id);
+      const details = await CartSchema.findById(cartDetails.id).lean();
       if (!details) {
         return res
           .status(404)
           .json(constructErrorResponseBody("Cart doesn't exist any longer!"));
       }
       const data: CartDetailsResponseType = {
-        id: details?.id,
+        id: details?._id?.toString(),
         productDetails: details?.productDetails,
         quantity: details?.quantity,
         totalPrice: generateAmount(
@@ -110,7 +110,7 @@ const addToCartController: ControllerType = async (req, res) => {
       userId: fetchedUserDetails?.id,
       quantity,
       productDetails: {
-        id: productDetails?.id,
+        id: productDetails?._id?.toString(),
         name: productDetails?.name,
         image: productDetails?.image,
         amount: productDetails?.amount,

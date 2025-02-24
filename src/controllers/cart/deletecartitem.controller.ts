@@ -23,14 +23,16 @@ const deleteCartItemController: ControllerType = async (req, res) => {
   }
 
   try {
-    const cartDetails = await CartSchema.findById(id);
+    const cartDetails = await CartSchema.findById(id).lean();
     if (!cartDetails) {
       return res
         .status(404)
         .json(constructErrorResponseBody("Cart item not found!"));
     }
 
-    if (cartDetails?.userId !== fetchedUserDetails?.id) {
+    if (
+      cartDetails?.userId?.toString() !== fetchedUserDetails?.id?.toString()
+    ) {
       return res.status(403).json(constructErrorResponseBody("Not allowed!"));
     }
 

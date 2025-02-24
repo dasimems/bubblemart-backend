@@ -44,13 +44,14 @@ const getAddressesController: ControllerType = async (req, res) => {
     const fetchedProduct = await AddressSchema.find({
       userId: fetchedUserDetails.id
     })
+      .lean()
       .skip(skip)
       .limit(MAX_RETURN_ADDRESS_COUNT)
       .exec();
 
     const formattedAddressList: AddressDetailsResponseType[] =
-      fetchedProduct.map(({ id, coordinates, address, createdAt }) => ({
-        id,
+      fetchedProduct.map(({ _id, coordinates, address, createdAt }) => ({
+        id: _id?.toString(),
         coordinates,
         address,
         createdAt

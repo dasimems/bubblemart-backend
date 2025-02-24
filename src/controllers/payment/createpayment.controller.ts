@@ -91,16 +91,16 @@ const createPaymentController: ControllerType = async (req, res) => {
   }
 
   try {
-    const orderDetails = await OrderSchema.findById(
-      id
-    ).populate<CartDetailsType>({
-      path: "cartItems",
-      model: databaseKeys.carts,
-      select: "-__v",
-      options: {
-        strictPopulate: false // Ensures no errors if the product doesn't exist
-      }
-    });
+    const orderDetails = await OrderSchema.findById(id)
+      .populate<CartDetailsType>({
+        path: "cartItems",
+        model: databaseKeys.carts,
+        select: "-__v",
+        options: {
+          strictPopulate: false // Ensures no errors if the product doesn't exist
+        }
+      })
+      .lean();
     if (!orderDetails) {
       return res
         .status(404)
@@ -154,11 +154,11 @@ const createPaymentController: ControllerType = async (req, res) => {
     }
 
     const redisClientPromise = redisClient.set(
-      orderDetails?.id,
+      orderDetails?._id?.toString(),
       JSON.stringify(paymentDetails)
     );
     const updateOrderDetailsPromise = OrderSchema.findByIdAndUpdate(
-      orderDetails?.id,
+      orderDetails?._id?.toString(),
       {
         paymentReference: paymentDetails?.reference,
         paymentInitiatedAt: paymentInitiatedTime,

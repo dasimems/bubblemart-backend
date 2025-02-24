@@ -50,6 +50,7 @@ const getProductController: ControllerType = async (req, res) => {
     )
       .skip(skip)
       .limit(parseInt(max?.toString()))
+      .lean()
       .exec();
 
     const formattedProduct: ProductDetailsResponseType[] = fetchedProduct.map(
@@ -60,7 +61,7 @@ const getProductController: ControllerType = async (req, res) => {
         amount,
         image,
         description,
-        id,
+        _id,
         createdAt
       }) => ({
         name,
@@ -69,7 +70,7 @@ const getProductController: ControllerType = async (req, res) => {
         amount,
         image,
         description,
-        id,
+        id: _id?.toString(),
         createdAt
       })
     );
