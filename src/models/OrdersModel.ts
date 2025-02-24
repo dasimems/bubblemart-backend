@@ -67,7 +67,8 @@ const orderSchema = new Schema<OrderDetailsType>({
   },
   paymentReference: {
     type: String,
-    default: null
+    default: null,
+    index: true
   },
   refundedAt: {
     default: null,
@@ -75,12 +76,14 @@ const orderSchema = new Schema<OrderDetailsType>({
   },
   status: {
     type: String,
-    default: "PENDING"
+    default: "PENDING",
+    index: true
   },
   userId: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: databaseKeys.users
+    ref: databaseKeys.users,
+    index: true
   },
   paymentInitiatedAt: {
     default: null,
@@ -104,7 +107,8 @@ const orderSchema = new Schema<OrderDetailsType>({
     {
       type: Schema.Types.ObjectId,
       ref: databaseKeys.carts,
-      required: true
+      required: true,
+      index: true
     }
   ]
 });

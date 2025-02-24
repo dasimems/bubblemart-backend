@@ -10,12 +10,14 @@ const logSchema = new Schema<LogDetailsType>({
   productId: {
     type: Schema.Types.ObjectId,
     ref: databaseKeys.products,
-    required: true
+    required: true,
+    index: true
   },
   assignedTo: {
     type: Schema.Types.ObjectId,
     ref: databaseKeys.users,
-    default: null
+    default: null,
+    index: true
   },
   lastUpdatedAt: {
     type: Date,
@@ -34,7 +36,8 @@ const logSchema = new Schema<LogDetailsType>({
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: databaseKeys.users,
-    required: true
+    required: true,
+    index: true
   },
   email: {
     type: String,

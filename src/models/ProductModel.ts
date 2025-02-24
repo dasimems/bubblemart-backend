@@ -22,7 +22,8 @@ const productSchema = new Schema<ProductDetailsType>({
   },
   type: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   description: {
     type: String,
@@ -49,7 +50,8 @@ const productSchema = new Schema<ProductDetailsType>({
   createdBy: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: databaseKeys.users
+    ref: databaseKeys.users,
+    index: true
   }
 });
 

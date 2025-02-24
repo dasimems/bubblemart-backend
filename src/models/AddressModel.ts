@@ -24,7 +24,8 @@ const addressSchema = new Schema<AddressDetailsType>({
   userId: {
     type: Schema.Types.ObjectId,
     ref: databaseKeys.users,
-    required: true
+    required: true,
+    index: true
   },
   lastUpdatedAt: {
     type: Date,

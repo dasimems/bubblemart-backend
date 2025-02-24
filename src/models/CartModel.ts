@@ -16,7 +16,8 @@ const cartSchema = new Schema<CartDetailsType>({
     id: {
       type: Schema.Types.ObjectId,
       ref: databaseKeys.products,
-      required: true
+      required: true,
+      index: true
     },
     name: {
       type: String,
@@ -42,11 +43,13 @@ const cartSchema = new Schema<CartDetailsType>({
   userId: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: databaseKeys.users
+    ref: databaseKeys.users,
+    index: true
   },
   orderId: {
     type: Schema.Types.ObjectId,
-    ref: databaseKeys.orders
+    ref: databaseKeys.orders,
+    index: true
   },
   quantity: {
     type: Number,
