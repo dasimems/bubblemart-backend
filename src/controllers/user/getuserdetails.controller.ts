@@ -42,7 +42,7 @@ const getUserDetailsController: ControllerType = async (req, res) => {
   }
 
   try {
-    const userDetailsPromise = UserModel.findById({ id: userId }).lean();
+    const userDetailsPromise = UserModel.findById(userId).lean();
     const totalCartPromise = CartSchema.countDocuments({
       userId,
       $or: [{ orderId: { $exists: false } }, { orderId: null }]
