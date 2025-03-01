@@ -44,7 +44,7 @@ const getUserListController: ControllerType = async (req, res) => {
     const users = await UserModel.find()
       .skip(skip)
       .limit(MAX_RETURN_ITEM_COUNT)
-      .lean()
+      /* .lean() */
       .select("-__v");
     const userData: UserDetailsResponseType[] = users.map((userDetails) => ({
       avatar: userDetails?.avatar,

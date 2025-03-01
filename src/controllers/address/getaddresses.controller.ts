@@ -44,7 +44,7 @@ const getAddressesController: ControllerType = async (req, res) => {
     const fetchedProduct = await AddressSchema.find({
       userId: fetchedUserDetails.id
     })
-      .lean()
+      /*   /* .lean() */ */
       .skip(skip)
       .limit(MAX_RETURN_ADDRESS_COUNT)
       .exec();

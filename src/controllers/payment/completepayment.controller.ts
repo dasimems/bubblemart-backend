@@ -22,21 +22,22 @@ export const updateOrderProduct = (orderDetails, paidAt) => {
         CartDetailsType
       > &
         CartDetailsType)[]
-    ).map((cart) =>
-      CartSchema.findByIdAndUpdate(cart?.id, {
-        paidAt: new Date(paidAt),
-        lastUpdatedAt: new Date(),
-        $push: {
-          updates: {
-            $each: [
-              {
-                description: `Payment made!`,
-                updatedAt: new Date()
-              }
-            ]
+    ).map(
+      (cart) =>
+        CartSchema.findByIdAndUpdate(cart?.id, {
+          paidAt: new Date(paidAt),
+          lastUpdatedAt: new Date(),
+          $push: {
+            updates: {
+              $each: [
+                {
+                  description: `Payment made!`,
+                  updatedAt: new Date()
+                }
+              ]
+            }
           }
-        }
-      }).lean()
+        }) /* .lean() */
     )
   );
   const updateOrderPromise = OrderSchema.findByIdAndUpdate(orderDetails?.id, {
@@ -53,33 +54,34 @@ export const updateOrderProduct = (orderDetails, paidAt) => {
         ]
       }
     }
-  }).lean();
+  }); /* .lean() */
   const cartList = (
     orderDetails?.cartItems as unknown as CartDetailsType[]
   ).filter((cart) => cart?.productDetails?.id);
 
   const updateProductPromise = Promise.all(
-    cartList.map((cart) =>
-      ProductSchema.findByIdAndUpdate(cart?.productDetails?.id, {
-        $set: {
-          "cartItems.$.quantity": {
-            $cond: {
-              if: {
-                $lt: [
-                  {
-                    $subtract: ["$cartItems.quantity", cart?.quantity || 0]
-                  },
-                  1
-                ]
-              }, // Subtract but make sure it doesn't drop below 1
-              then: 0, // Set to 0 if less than 1
-              else: {
-                $subtract: ["$cartItems.quantity", cart?.quantity || 0]
-              } // Otherwise, subtract
+    cartList.map(
+      (cart) =>
+        ProductSchema.findByIdAndUpdate(cart?.productDetails?.id, {
+          $set: {
+            "cartItems.$.quantity": {
+              $cond: {
+                if: {
+                  $lt: [
+                    {
+                      $subtract: ["$cartItems.quantity", cart?.quantity || 0]
+                    },
+                    1
+                  ]
+                }, // Subtract but make sure it doesn't drop below 1
+                then: 0, // Set to 0 if less than 1
+                else: {
+                  $subtract: ["$cartItems.quantity", cart?.quantity || 0]
+                } // Otherwise, subtract
+              }
             }
           }
-        }
-      }).lean()
+        }) /* .lean() */
     )
   );
 
@@ -108,18 +110,15 @@ const completePaymentController: ControllerType = async (req, res) => {
 
       const orderDetails = await OrderSchema.findOne({
         paymentReference: reference
-      })
-        .populate<CartDetailsType>({
-          path: "cartItems",
-          model: databaseKeys.carts,
-          select: "-__v",
-          options: {
-            strictPopulate: false // Ensures no errors if the product doesn't exist
-          }
-        })
-        .lean();
-
-      if (!orderDetails) {
+      }).populate<CartDetailsType>({
+        path: "cartItems",
+        model: databaseKeys.carts,
+        select: "-__v",
+        options: {
+          strictPopulate: false // Ensures no errors if the product doesn't exist
+        }
+      });
+      /* .lean() */ if (!orderDetails) {
         return res
           .status(404)
           .json(constructErrorResponseBody("Unable to determine order!"));

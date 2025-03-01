@@ -32,7 +32,7 @@ const deleteProductController: ControllerType = async (req, res) => {
         .json(constructErrorResponseBody("Product not found"));
     }
 
-    await ProductSchema.findByIdAndDelete(id).lean();
+    await ProductSchema.findByIdAndDelete(id) /* .lean() */;
     return res.status(204).end();
   } catch (error) {
     return res

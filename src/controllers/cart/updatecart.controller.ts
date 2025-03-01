@@ -42,12 +42,12 @@ const updateCartController: ControllerType = async (req, res) => {
   try {
     const { productId, quantity } = body as AddToCartBodyType;
     const [productDetails, cartDetails] = await Promise.all([
-      ProductSchema.findById(productId).lean(),
+      ProductSchema.findById(productId) /* .lean() */,
       CartSchema.findOne({
         "productDetails.id": productId,
         userId: fetchedUserDetails.id,
         $or: [{ orderId: { $exists: false } }, { orderId: null }]
-      }).lean()
+      }) /* .lean() */
     ]);
 
     if (!cartDetails) {
@@ -89,7 +89,7 @@ const updateCartController: ControllerType = async (req, res) => {
       {
         new: true
       }
-    ).lean();
+    ); /* .lean() */
     if (!details) {
       return res
         .status(404)

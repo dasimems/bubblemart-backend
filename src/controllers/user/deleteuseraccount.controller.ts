@@ -57,7 +57,7 @@ const deleteUserController: ControllerType = async (req, res) => {
       res.status(401).json(constructErrorResponseBody("Authorization failed!"));
     }
 
-    await UserModel.findByIdAndDelete(id).lean();
+    await UserModel.findByIdAndDelete(id) /* .lean() */;
     return res
       .clearCookie(cookieKeys.auth, {
         secure: ENVIRONMENT?.toLowerCase() === "production"

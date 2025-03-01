@@ -50,7 +50,7 @@ const addToCartController: ControllerType = async (req, res) => {
   try {
     const { productId, quantity } = body as AddToCartBodyType;
     const [productDetails, cartDetails] = await Promise.all([
-      ProductSchema.findById(productId).lean(),
+      ProductSchema.findById(productId) /* .lean() */,
       CartSchema.findOne({
         "productDetails.id": productId,
         userId: fetchedUserDetails.id,
@@ -82,7 +82,7 @@ const addToCartController: ControllerType = async (req, res) => {
         }
       ];
       await cartDetails.save();
-      const details = await CartSchema.findById(cartDetails.id).lean();
+      const details = await CartSchema.findById(cartDetails.id); /* .lean() */
       if (!details) {
         return res
           .status(404)

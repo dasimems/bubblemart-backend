@@ -45,7 +45,7 @@ export const loginController: ControllerType = async (req, res) => {
   const email = bodyEmail?.toLowerCase();
 
   try {
-    const user = await UserModel.findOne({ email }).lean();
+    const user = await UserModel.findOne({ email }); /* .lean() */
     if (!user) {
       return res
         .status(401)

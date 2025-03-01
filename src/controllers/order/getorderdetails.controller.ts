@@ -58,7 +58,7 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
       });
     }
 
-    const orderDetails = await orderDetailsPromise.lean();
+    const orderDetails = await orderDetailsPromise; /* .lean() */
     if (!orderDetails) {
       return res
         .status(404)

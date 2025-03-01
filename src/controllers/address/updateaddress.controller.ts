@@ -35,7 +35,7 @@ const updateAddressController: ControllerType = async (req, res) => {
       .json(constructErrorResponseBody("Invalid fields detected", errors));
   }
   try {
-    const addressDetails = await AddressSchema.findById(id).lean();
+    const addressDetails = await AddressSchema.findById(id); /* .lean() */
     if (!addressDetails) {
       return res
         .status(404)
@@ -72,7 +72,7 @@ const updateAddressController: ControllerType = async (req, res) => {
         }
       },
       { new: true }
-    ).lean();
+    ); /* .lean() */
     if (!newAddressDetails) {
       return res
         .status(500)
