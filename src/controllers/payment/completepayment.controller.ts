@@ -11,35 +11,53 @@ import CartSchema from "../../models/CartModel";
 import ProductSchema from "../../models/ProductModel";
 import { redisClient } from "../../app";
 import { PaystackWebhookEvent } from "../../apis/paystack";
-import { Document } from "mongoose";
 
 export const updateOrderProduct = (orderDetails, paidAt) => {
-  const updateCartsPromise = Promise.all(
-    (
-      (orderDetails?.cartItems || []) as unknown as (Document<
-        string,
-        unknown,
-        CartDetailsType
-      > &
-        CartDetailsType)[]
-    ).map(
-      (cart) =>
-        CartSchema.findByIdAndUpdate(cart?.id, {
-          paidAt: new Date(paidAt),
-          lastUpdatedAt: new Date(),
-          $push: {
-            updates: {
-              $each: [
-                {
-                  description: `Payment made!`,
-                  updatedAt: new Date()
-                }
-              ]
+  const updateCartsPromise = CartSchema.updateMany(
+    {
+      orderId: orderDetails?.id
+    },
+    {
+      paidAt: new Date(paidAt),
+      lastUpdatedAt: new Date(),
+      $push: {
+        updates: {
+          $each: [
+            {
+              description: `Payment made!`,
+              updatedAt: new Date()
             }
-          }
-        }) /* .lean() */
-    )
+          ]
+        }
+      }
+    }
   );
+  // const updateCartsPromise = Promise.all(
+  //   (
+  //     (orderDetails?.cartItems || []) as unknown as (Document<
+  //       string,
+  //       unknown,
+  //       CartDetailsType
+  //     > &
+  //       CartDetailsType)[]
+  //   ).map(
+  //     (cart) =>
+  //       CartSchema.findByIdAndUpdate(cart?.id, {
+  //         paidAt: new Date(paidAt),
+  //         lastUpdatedAt: new Date(),
+  //         $push: {
+  //           updates: {
+  //             $each: [
+  //               {
+  //                 description: `Payment made!`,
+  //                 updatedAt: new Date()
+  //               }
+  //             ]
+  //           }
+  //         }
+  //       }) /* .lean() */
+  //   )
+  // );
   const updateOrderPromise = OrderSchema.findByIdAndUpdate(orderDetails?.id, {
     paidAt: new Date(paidAt),
     lastUpdatedAt: new Date(),
@@ -59,31 +77,70 @@ export const updateOrderProduct = (orderDetails, paidAt) => {
     orderDetails?.cartItems as unknown as CartDetailsType[]
   ).filter((cart) => cart?.productDetails?.id);
 
-  const updateProductPromise = Promise.all(
-    cartList.map(
-      (cart) =>
-        ProductSchema.findByIdAndUpdate(cart?.productDetails?.id, {
+  const updateProductPromise = ProductSchema.bulkWrite(
+    cartList.map((cart) => ({
+      updateOne: {
+        filter: {
+          _id: cart?.productDetails?.id
+        },
+        update: {
           $set: {
-            "cartItems.$.quantity": {
+            quantity: {
               $cond: {
                 if: {
                   $lt: [
                     {
-                      $subtract: ["$cartItems.quantity", cart?.quantity || 0]
+                      $subtract: ["$quantity", cart?.quantity || 0]
                     },
                     1
                   ]
                 }, // Subtract but make sure it doesn't drop below 1
                 then: 0, // Set to 0 if less than 1
                 else: {
-                  $subtract: ["$cartItems.quantity", cart?.quantity || 0]
+                  $subtract: ["$quantity", cart?.quantity || 0]
                 } // Otherwise, subtract
               }
-            }
+            },
+            lastUpdatedAt: new Date()
           }
-        }) /* .lean() */
-    )
+        },
+        $push: {
+          updates: {
+            description: `Quantity updated by subtracting ${
+              cart?.quantity || 0
+            }`,
+            updatedAt: new Date()
+          }
+        }
+      }
+    }))
   );
+
+  // const updateProducPromise = Promise.all(
+  //   cartList.map(
+  //     (cart) =>
+  //       ProductSchema.findByIdAndUpdate(cart?.productDetails?.id, {
+  //         $set: {
+  //           "cartItems.$.quantity": {
+  //             $cond: {
+  //               if: {
+  //                 $lt: [
+  //                   {
+  //                     $subtract: ["$cartItems.quantity", cart?.quantity || 0]
+  //                   },
+  //                   1
+  //                 ]
+  //               }, // Subtract but make sure it doesn't drop below 1
+  //               then: 0, // Set to 0 if less than 1
+  //               else: {
+  //                 $subtract: ["$cartItems.quantity", cart?.quantity || 0]
+  //               } // Otherwise, subtract
+  //             }
+  //           }
+  //         }
+  //       }) /* .lean() */
+  //   )
+  // );
 
   const deleteRedisRecordPromise = redisClient.del(orderDetails?.id);
   return Promise.all([
