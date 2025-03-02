@@ -125,15 +125,13 @@ const addProductController: ControllerType = async (req, res) => {
         );
     }
 
-    const logsDetailsList = await Promise.all(
-      (logs || []).map(({ email, password }) =>
-        LogSchema.create({
-          email,
-          password,
-          createdBy: fetchedUserDetails?.id || "",
-          productId: productDetails?.id
-        })
-      )
+    const logsDetailsList = await LogSchema.insertMany(
+      (logs || []).map(({ email, password }) => ({
+        email,
+        password,
+        createdBy: fetchedUserDetails?.id || "",
+        productId: productDetails?.id
+      }))
     );
 
     let data: ProductDetailsResponseType = {
