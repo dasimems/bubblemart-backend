@@ -48,7 +48,10 @@ export { redisClient };
 
 export const connectDB = async () => {
   try {
-    await mongoose.connect(uri, {});
+    await mongoose.connect(uri, {
+      readPreference: "secondaryPreferred",
+      maxPoolSize: 100
+    });
     console.log("MongoDB connected successfully");
   } catch (error: any) {
     console.error("MongoDB connection failed:", error?.message);
