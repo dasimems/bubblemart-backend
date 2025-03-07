@@ -37,25 +37,6 @@ export const updateOrderProduct = async (
   if (!userId) {
     return;
   }
-  // const updateCartsPromise = CartSchema.updateMany(
-  //   {
-  //     orderId: orderDetails?.id
-  //   },
-  //   {
-  //     paidAt: new Date(paidAt),
-  //     lastUpdatedAt: new Date(),
-  //     $push: {
-  //       updates: {
-  //         $each: [
-  //           {
-  //             description: `Payment made!`,
-  //             updatedAt: new Date()
-  //           }
-  //         ]
-  //       }
-  //     }
-  //   }
-  // );
   const updateCartsPromise = CartSchema.bulkWrite([
     {
       updateMany: {
@@ -183,9 +164,9 @@ export const updateOrderProduct = async (
       }))
   );
   const updateCartPromise = CartSchema.bulkWrite(
-    cartList.map((cart) => ({
+    cartToUpdateId.map((_id) => ({
       updateOne: {
-        filter: { _id: cart._id },
+        filter: { _id },
         update: {
           $set: { deliveredAt: deliveredDate },
           $push: {
