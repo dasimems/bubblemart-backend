@@ -1,10 +1,15 @@
 import Joi, { ValidationError } from "joi";
-import { ControllerType, ProductDetailsResponseType } from "../../utils/types";
+import {
+  AmountType,
+  ControllerType,
+  ProductDetailsResponseType
+} from "../../utils/types";
 import { AddProductBodyType } from "./addproduct.controller";
 import {
   constructErrorResponseBody,
   constructSuccessResponseBody,
-  formatJoiErrors
+  formatJoiErrors,
+  generateAmount
 } from "../../modules";
 import ProductSchema from "../../models/ProductModel";
 import { MongoError } from "mongodb";
@@ -76,7 +81,9 @@ const updateProductController: ControllerType = async (req, res) => {
         .json(constructErrorResponseBody("Product not found"));
     }
 
-    let updatedData: UpdateProductBodyType = {};
+    let updatedData: Omit<UpdateProductBodyType, "amount"> & {
+      amount?: AmountType;
+    } = {};
 
     const { name, description, image, quantity, amount } =
       body as Partial<AddProductBodyType>;
@@ -108,7 +115,7 @@ const updateProductController: ControllerType = async (req, res) => {
     if (amount) {
       updatedData = {
         ...updatedData,
-        amount
+        amount: generateAmount(amount)
       };
     }
 
