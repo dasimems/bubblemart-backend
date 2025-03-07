@@ -7,7 +7,8 @@ export const routeGroup = {
     user: "/user",
     users: "/users",
     upload: "/upload",
-    payment: "/payment"
+    payment: "/payment",
+    log: "/log"
   },
   allPaths = {
     login: `/login`,

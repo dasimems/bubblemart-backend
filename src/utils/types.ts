@@ -1,3 +1,4 @@
+import { LogDetailsResponseType } from "./types";
 import { NextFunction, Request, Response } from "express";
 import { Schema } from "mongoose";
 
@@ -163,7 +164,10 @@ export type UserDetailsType = {
 export type AuthenticationDestructuredType = {
   userTokenRole: Roles;
   userTokenId: string;
-  fetchedUserDetails: UserDetailsType & { id: Schema.Types.ObjectId };
+  fetchedUserDetails: UserDetailsType & {
+    id: Schema.Types.ObjectId;
+    _id: Schema.Types.ObjectId;
+  };
 };
 
 export type UserDetailsResponseType = {
@@ -176,6 +180,7 @@ export type UserDetailsResponseType = {
 
 export type LogDetailsResponseType = {
   id: string;
+  productId?: ProductDetailsResponseType;
 } & Omit<
   LogDetailsType,
   "createdAt" | "createdBy" | "lastUpdatedAt" | "productId" | "updates"
@@ -189,7 +194,6 @@ export type ProductDetailsResponseType = {
 export type AddressDetailsResponseType = {
   id: string;
 } & Omit<AddressDetailsType, "userId" | "lastUpdatedAt" | "updates">;
-
 export type CartDetailsResponseType = {
   id: string;
   totalPrice: AmountType;
