@@ -54,7 +54,7 @@ const orderSchema = new Schema<OrderDetailsType>({
     type: Date
   },
   deliveredAt: {
-    default: new Date(),
+    default: null,
     type: Date
   },
   lastUpdatedAt: {
