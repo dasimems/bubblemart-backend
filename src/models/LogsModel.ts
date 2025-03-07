@@ -1,6 +1,7 @@
 import { model, Schema } from "mongoose";
 import { LogDetailsType } from "../utils/types";
 import { databaseKeys } from "../utils/variables";
+import updateSchema from "./UpdateModel";
 
 const logSchema = new Schema<LogDetailsType>({
   createdAt: {
@@ -23,16 +24,10 @@ const logSchema = new Schema<LogDetailsType>({
     type: Date,
     default: null
   },
-  updates: [
-    {
-      description: {
-        type: String
-      },
-      updatedAt: {
-        type: Date
-      }
-    }
-  ],
+  updates: {
+    type: [updateSchema],
+    default: []
+  },
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: databaseKeys.users,

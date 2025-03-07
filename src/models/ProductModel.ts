@@ -2,6 +2,7 @@ import { model, Schema } from "mongoose";
 import { databaseKeys } from "../utils/variables";
 import { ProductDetailsType } from "../utils/types";
 import amountSchema from "./AmountModel";
+import updateSchema from "./UpdateModel";
 
 const productSchema = new Schema<ProductDetailsType>({
   amount: {
@@ -33,16 +34,10 @@ const productSchema = new Schema<ProductDetailsType>({
     type: String,
     required: true
   },
-  updates: [
-    {
-      description: {
-        type: String
-      },
-      updatedAt: {
-        type: Date
-      }
-    }
-  ],
+  updates: {
+    type: [updateSchema],
+    default: []
+  },
   lastUpdatedAt: {
     type: Date,
     default: null

@@ -1,18 +1,11 @@
 import { model, Schema } from "mongoose";
-import { CartDetailsType } from "../utils/types";
+import { CartDetailsType, CartProductDetails } from "../utils/types";
 import { databaseKeys } from "../utils/variables";
 import amountSchema from "./AmountModel";
+import updateSchema from "./UpdateModel";
 
-const cartSchema = new Schema<CartDetailsType>({
-  createdAt: {
-    default: new Date(),
-    type: Date
-  },
-  lastUpdatedAt: {
-    default: null,
-    type: Date
-  },
-  productDetails: {
+export const cartProductSchema = new Schema<CartProductDetails>(
+  {
     id: {
       type: Schema.Types.ObjectId,
       ref: databaseKeys.products,
@@ -39,6 +32,22 @@ const cartSchema = new Schema<CartDetailsType>({
       required: true
     }
   },
+  { _id: false }
+);
+
+const cartSchema = new Schema<CartDetailsType>({
+  createdAt: {
+    default: new Date(),
+    type: Date
+  },
+  lastUpdatedAt: {
+    default: null,
+    type: Date
+  },
+  productDetails: {
+    type: cartProductSchema,
+    required: true
+  },
   userId: {
     type: Schema.Types.ObjectId,
     required: true,
@@ -54,16 +63,10 @@ const cartSchema = new Schema<CartDetailsType>({
     type: Number,
     required: true
   },
-  updates: [
-    {
-      description: {
-        type: String
-      },
-      updatedAt: {
-        type: Date
-      }
-    }
-  ],
+  updates: {
+    type: [updateSchema],
+    default: []
+  },
   paidAt: {
     type: Date,
     default: null

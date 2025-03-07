@@ -1,6 +1,7 @@
 import { model, Schema } from "mongoose";
 import { ContactInformationType, OrderDetailsType } from "../utils/types";
 import { databaseKeys } from "../utils/variables";
+import updateSchema from "./UpdateModel";
 
 const contactInformationSchema = new Schema<ContactInformationType>(
   {
@@ -93,16 +94,10 @@ const orderSchema = new Schema<OrderDetailsType>({
     type: contactInformationSchema,
     default: null
   },
-  updates: [
-    {
-      description: {
-        type: String
-      },
-      updatedAt: {
-        type: Date
-      }
-    }
-  ],
+  updates: {
+    type: [updateSchema],
+    default: []
+  },
   cartItems: [
     {
       type: Schema.Types.ObjectId,

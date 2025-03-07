@@ -1,6 +1,7 @@
 import { model, Schema } from "mongoose";
 import { UserDetailsType } from "../utils/types";
 import { databaseKeys } from "../utils/variables";
+import updateSchema from "./UpdateModel";
 
 const userSchema = new Schema<UserDetailsType>({
   name: {
@@ -35,16 +36,10 @@ const userSchema = new Schema<UserDetailsType>({
     default: "USER",
     index: true
   },
-  updates: [
-    {
-      description: {
-        type: String
-      },
-      updatedAt: {
-        type: Date
-      }
-    }
-  ]
+  updates: {
+    type: [updateSchema],
+    default: []
+  }
 });
 
 const UserModel = model(databaseKeys.users, userSchema);

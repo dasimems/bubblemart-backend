@@ -1,6 +1,7 @@
 import { model, Schema } from "mongoose";
 import { AddressDetailsType } from "../utils/types";
 import { databaseKeys } from "../utils/variables";
+import updateSchema from "./UpdateModel";
 
 const addressSchema = new Schema<AddressDetailsType>({
   address: {
@@ -31,16 +32,10 @@ const addressSchema = new Schema<AddressDetailsType>({
     type: Date,
     default: null
   },
-  updates: [
-    {
-      description: {
-        type: String
-      },
-      updatedAt: {
-        type: Date
-      }
-    }
-  ]
+  updates: {
+    type: [updateSchema],
+    default: []
+  }
 });
 
 const AddressSchema = model(databaseKeys.address, addressSchema);
