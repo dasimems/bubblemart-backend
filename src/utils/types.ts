@@ -184,6 +184,7 @@ export type LogDetailsResponseType = {
 export type ProductDetailsResponseType = {
   id: string;
   logs?: LogDetailsResponseType[];
+  totalSales: number | null;
 } & Omit<ProductDetailsType, "createdBy" | "lastUpdatedAt" | "updates">;
 export type AddressDetailsResponseType = {
   id: string;
