@@ -108,7 +108,8 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
             (details?.productDetails?.amount?.whole || 0)
         ),
         createdAt: details?.createdAt,
-        isAvailable: false
+        isAvailable: false,
+        deliveredAt: details?.deliveredAt
       })),
       id: orderDetails?._id?.toString(),
       paidAt: orderDetails?.paidAt,
@@ -118,6 +119,7 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
       contactInformation: orderDetails?.contactInformation,
       status: orderDetails?.status,
       checkoutDetails,
+      deliveredAt: orderDetails?.deliveredAt,
       createdAt: orderDetails?.createdAt,
       user:
         isAdmin &&

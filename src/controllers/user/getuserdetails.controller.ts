@@ -134,7 +134,8 @@ const getUserDetailsController: ControllerType = async (req, res) => {
               (details?.productDetails?.amount?.whole || 0)
           ),
           createdAt: details?.createdAt,
-          isAvailable: false
+          isAvailable: false,
+          deliveredAt: details?.deliveredAt
         })),
         id: lastOrderMade?._id?.toString(),
         paidAt: lastOrderMade?.paidAt,
@@ -144,6 +145,7 @@ const getUserDetailsController: ControllerType = async (req, res) => {
         contactInformation: lastOrderMade?.contactInformation,
         status: lastOrderMade?.status,
         checkoutDetails,
+        deliveredAt: lastOrderMade?.deliveredAt,
         createdAt: lastOrderMade?.createdAt
       };
       data = { ...data, lastMadeOrder };

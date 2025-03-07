@@ -94,7 +94,8 @@ const verifyPaymentController: ControllerType = async (req, res) => {
             (details?.productDetails?.amount?.whole || 0)
         ),
         createdAt: details?.createdAt,
-        isAvailable: false
+        isAvailable: false,
+        deliveredAt: details?.deliveredAt
       })),
       id: orderDetails?._id?.toString(),
       paidAt: new Date(paid_at),
@@ -104,6 +105,7 @@ const verifyPaymentController: ControllerType = async (req, res) => {
       contactInformation: orderDetails?.contactInformation,
       status: orderDetails?.status,
       checkoutDetails: null,
+      deliveredAt: orderDetails?.deliveredAt,
       paymentMethod: channel,
       createdAt: orderDetails?.createdAt
     };

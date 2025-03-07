@@ -123,6 +123,7 @@ const getOrdersController: ControllerType = async (req, res) => {
         refundedAt: order?.refundedAt,
         contactInformation: order?.contactInformation,
         status: order?.status,
+        deliveredAt: order?.deliveredAt,
         cartItems: (
           (order?.cartItems || []) as unknown as (Document<
             string,
@@ -139,7 +140,8 @@ const getOrdersController: ControllerType = async (req, res) => {
               (details?.productDetails?.amount?.whole || 0)
           ),
           createdAt: details?.createdAt,
-          isAvailable: false
+          isAvailable: false,
+          deliveredAt: details?.deliveredAt
         })),
         checkoutDetails: checkoutDetails ? JSON.parse(checkoutDetails) : null,
         createdAt: order?.createdAt,

@@ -165,18 +165,35 @@ const createOrderController: ControllerType = async (req, res) => {
     const data: OrderDetailsResponseType = {
       id,
       createdAt,
-      cartItems: cartDetails.map(({ id, productDetails, quantity }) => ({
-        id,
-        productDetails,
-        quantity,
-        totalPrice: generateAmount(
-          (quantity || 0) * (productDetails?.amount?.whole || 0)
-        ),
-        isAvailable: false
-      })),
+      cartItems: cartDetails.map(
+        ({ id, productDetails, quantity, deliveredAt }) => ({
+          id,
+          productDetails,
+          quantity,
+          totalPrice: generateAmount(
+            (quantity || 0) * (productDetails?.amount?.whole || 0)
+          ),
+          isAvailable: false,
+          deliveredAt
+        })
+      ),
       contactInformation: hasAvailableGift ? contactInformation : null,
       status,
-      checkoutDetails: null
+      checkoutDetails: null,
+      paidAt: orderDetails?.paidAt,
+      paymentInitiatedAt: orderDetails?.paymentInitiatedAt,
+      paymentReference: orderDetails?.paymentReference,
+      deliveredAt: orderDetails?.deliveredAt,
+      refundedAt: orderDetails?.refundedAt,
+      user: {
+        avatar: fetchedUserDetails?.avatar,
+        createdAt: fetchedUserDetails?.createdAt,
+        email: fetchedUserDetails?.email,
+        id: fetchedUserDetails?.id?.toString() as string,
+        name: fetchedUserDetails?.name,
+        role: fetchedUserDetails?.role,
+        updatedAt: fetchedUserDetails?.updatedAt
+      }
     };
     return res.status(200).json(constructSuccessResponseBody(data));
   } catch (error) {
