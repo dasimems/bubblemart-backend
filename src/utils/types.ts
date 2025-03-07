@@ -1,4 +1,3 @@
-import { LogDetailsResponseType } from "./types";
 import { NextFunction, Request, Response } from "express";
 import { Schema } from "mongoose";
 
