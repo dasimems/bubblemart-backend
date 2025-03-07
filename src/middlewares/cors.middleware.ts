@@ -13,7 +13,7 @@ const allowedOrigins: string[] = originList.split(",");
 const allowedIpAddresses: string[] = ipAddressList.split(",");
 
 const corsOptions: CorsOptions = {
-  methods: "GET,PUT,POST,DELETE",
+  methods: "GET,PUT,POST,DELETE,PATCH",
   optionsSuccessStatus: 200
 };
 
