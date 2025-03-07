@@ -5,150 +5,218 @@ import {
   constructSuccessResponseBody,
   verifyPaystackTransaction
 } from "../../modules";
-import { CartDetailsType, ControllerType } from "../../utils/types";
+import {
+  CartDetailsType,
+  ControllerType,
+  OrderDetailsType
+} from "../../utils/types";
 import { databaseKeys, defaultErrorMessage } from "../../utils/variables";
 import CartSchema from "../../models/CartModel";
 import ProductSchema from "../../models/ProductModel";
 import { redisClient } from "../../app";
 import { PaystackWebhookEvent } from "../../apis/paystack";
+import { Document, MergeType, Types } from "mongoose";
+import LogSchema from "../../models/LogsModel";
 
-export const updateOrderProduct = (orderDetails, paidAt) => {
-  const updateCartsPromise = CartSchema.updateMany(
-    {
-      orderId: orderDetails?.id
+export const updateOrderProduct = async (
+  orderDetails: Document<
+    unknown,
+    {},
+    MergeType<OrderDetailsType, CartDetailsType>
+  > &
+    Omit<OrderDetailsType, keyof CartDetailsType> &
+    CartDetailsType & {
+      _id: Types.ObjectId;
+    } & {
+      __v?: number;
     },
+  paidAt: Date | string
+) => {
+  const { userId } = orderDetails || {};
+  const orderId = orderDetails?.id || orderDetails?._id;
+  if (!userId) {
+    return;
+  }
+  // const updateCartsPromise = CartSchema.updateMany(
+  //   {
+  //     orderId: orderDetails?.id
+  //   },
+  //   {
+  //     paidAt: new Date(paidAt),
+  //     lastUpdatedAt: new Date(),
+  //     $push: {
+  //       updates: {
+  //         $each: [
+  //           {
+  //             description: `Payment made!`,
+  //             updatedAt: new Date()
+  //           }
+  //         ]
+  //       }
+  //     }
+  //   }
+  // );
+  const updateCartsPromise = CartSchema.bulkWrite([
+    {
+      updateMany: {
+        filter: { orderId },
+        update: {
+          $set: {
+            paidAt: new Date(paidAt),
+            lastUpdatedAt: new Date()
+          },
+          $push: {
+            updates: {
+              $each: [
+                {
+                  description: `Payment made!`,
+                  updatedAt: new Date()
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]);
+  const updateOrderPromise = OrderSchema.updateOne(
+    { _id: orderId },
     {
       paidAt: new Date(paidAt),
       lastUpdatedAt: new Date(),
+      status: "PAID",
       $push: {
         updates: {
           $each: [
             {
-              description: `Payment made!`,
+              description: `Payment successfully made!`,
               updatedAt: new Date()
             }
           ]
         }
       }
     }
-  );
-  // const updateCartsPromise = Promise.all(
-  //   (
-  //     (orderDetails?.cartItems || []) as unknown as (Document<
-  //       string,
-  //       unknown,
-  //       CartDetailsType
-  //     > &
-  //       CartDetailsType)[]
-  //   ).map(
-  //     (cart) =>
-  //       CartSchema.findByIdAndUpdate(cart?.id, {
-  //         paidAt: new Date(paidAt),
-  //         lastUpdatedAt: new Date(),
-  //         $push: {
-  //           updates: {
-  //             $each: [
-  //               {
-  //                 description: `Payment made!`,
-  //                 updatedAt: new Date()
-  //               }
-  //             ]
-  //           }
-  //         }
-  //       }) /* .lean() */
-  //   )
-  // );
-  const updateOrderPromise = OrderSchema.findByIdAndUpdate(orderDetails?.id, {
-    paidAt: new Date(paidAt),
-    lastUpdatedAt: new Date(),
-    status: "PAID",
-    $push: {
-      updates: {
-        $each: [
-          {
-            description: `Payment successfully made!`,
-            updatedAt: new Date()
-          }
-        ]
-      }
-    }
-  }); /* .lean() */
+  ); /* .lean() */
   const cartList = (
-    orderDetails?.cartItems as unknown as CartDetailsType[]
+    orderDetails?.cartItems as unknown as (CartDetailsType & {
+      _id: Types.ObjectId;
+    } & {
+      __v?: number;
+    })[]
   ).filter((cart) => cart?.productDetails?.id);
 
+  const logCarts = cartList.filter(
+    (cart) => cart?.productDetails?.type === "log"
+  );
+
+  const logsToUpdatePromise = Promise.all(
+    logCarts.map((cart) =>
+      LogSchema.find({
+        productId: cart?.productDetails?.id,
+        $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }]
+      })
+        .select("_id")
+        .limit(cart?.quantity || 0)
+    )
+  );
   const updateProductPromise = ProductSchema.bulkWrite(
     cartList.map((cart) => ({
       updateOne: {
-        filter: {
-          _id: cart?.productDetails?.id
-        },
+        filter: { _id: cart?.productDetails?.id },
         update: {
-          $set: {
-            quantity: {
-              $cond: {
-                if: {
-                  $lt: [
-                    {
-                      $subtract: ["$quantity", cart?.quantity || 0]
-                    },
-                    1
-                  ]
-                }, // Subtract but make sure it doesn't drop below 1
-                then: 0, // Set to 0 if less than 1
-                else: {
-                  $subtract: ["$quantity", cart?.quantity || 0]
-                } // Otherwise, subtract
-              }
-            },
-            lastUpdatedAt: new Date()
-          }
-        },
-        $push: {
-          updates: {
-            description: `Quantity updated by subtracting ${
-              cart?.quantity || 0
-            }`,
-            updatedAt: new Date()
+          $inc: { quantity: -Math.max(cart?.quantity || 0, 0) }, // Ensure it doesn’t go negative
+          $set: { lastUpdatedAt: new Date() },
+          $push: {
+            updates: {
+              description: `Quantity updated by subtracting ${
+                cart?.quantity || 0
+              }`,
+              updatedAt: new Date()
+            }
           }
         }
       }
     }))
   );
-
-  // const updateProducPromise = Promise.all(
-  //   cartList.map(
-  //     (cart) =>
-  //       ProductSchema.findByIdAndUpdate(cart?.productDetails?.id, {
-  //         $set: {
-  //           "cartItems.$.quantity": {
-  //             $cond: {
-  //               if: {
-  //                 $lt: [
-  //                   {
-  //                     $subtract: ["$cartItems.quantity", cart?.quantity || 0]
-  //                   },
-  //                   1
-  //                 ]
-  //               }, // Subtract but make sure it doesn't drop below 1
-  //               then: 0, // Set to 0 if less than 1
-  //               else: {
-  //                 $subtract: ["$cartItems.quantity", cart?.quantity || 0]
-  //               } // Otherwise, subtract
-  //             }
-  //           }
-  //         }
-  //       }) /* .lean() */
-  //   )
-  // );
+  const deliveredDate = new Date();
 
   const deleteRedisRecordPromise = redisClient.del(orderDetails?.id);
-  return Promise.all([
+  const [logsToUpdate] = await Promise.all([
+    logsToUpdatePromise,
     updateCartsPromise,
     updateOrderPromise,
     updateProductPromise,
     deleteRedisRecordPromise
   ]);
+
+  let cartToUpdateId: Types.ObjectId[] = [];
+
+  const updateLogList = logsToUpdate
+    .map((logs, index) => {
+      const cartDetails = logCarts[index];
+
+      if (!logs || logs.length !== cartDetails?.quantity) {
+        return undefined;
+      }
+
+      cartToUpdateId = [...cartToUpdateId, cartDetails?._id];
+      return logs.map((log) => log._id);
+    })
+    .filter((promise) => promise !== undefined);
+
+  const assignUserToLogPromise = LogSchema.bulkWrite(
+    updateLogList
+      .flatMap((logIds) => logIds?.map((logId) => logId) || [])
+      .map((log) => ({
+        updateOne: {
+          filter: { _id: log._id },
+          update: {
+            $set: { assignedTo: userId },
+            $push: {
+              updates: {
+                description: `Assigned to ${userId}`,
+                updatedAt: new Date()
+              }
+            }
+          }
+        }
+      }))
+  );
+  const updateCartPromise = CartSchema.bulkWrite(
+    cartList.map((cart) => ({
+      updateOne: {
+        filter: { _id: cart._id },
+        update: {
+          $set: { deliveredAt: deliveredDate },
+          $push: {
+            updates: {
+              description: `Delivered at ${deliveredDate}`,
+              updatedAt: deliveredDate
+            }
+          }
+        }
+      }
+    }))
+  );
+  await Promise.all([assignUserToLogPromise, updateCartPromise]);
+  const cartYetToBeDeliveredCount = await CartSchema.countDocuments({
+    orderId,
+    $or: [{ deliveredAt: null }, { deliveredAt: { $exists: false } }]
+  });
+  if (cartYetToBeDeliveredCount === 0) {
+    await OrderSchema.updateOne(
+      { _id: orderId },
+      {
+        $set: { deliveredAt: deliveredDate, status: "DELIVERED" },
+        $push: {
+          updates: {
+            description: "Order delivered!",
+            updatedAt: new Date()
+          }
+        }
+      }
+    );
+  }
 };
 
 const completePaymentController: ControllerType = async (req, res) => {

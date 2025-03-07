@@ -1,5 +1,5 @@
 config:
-  target: https://api.bubblemart.shop/v1
+  target: https://bubblemart-backend.onrender.com/v1
   # phases:
   #   - duration: 20
   #     arrivalRate: 5
@@ -10,16 +10,19 @@ config:
   #   - duration: 10
   #     arrivalRate: 2
   #     name: Slow-down phase
+  # phases:
+  #   - duration: 30
+  #     arrivalRate: 100
+  #     name: Ramp-up phase
+  #   - duration: 30
+  #     arrivalRate: 200
+  #     name: Peak phase
+  #   - duration: 20
+  #     arrivalRate: 50
+  #     name: Cool-down phase
   phases:
-    - duration: 30
-      arrivalRate: 100
-      name: Ramp-up phase
-    - duration: 30
-      arrivalRate: 200
-      name: Peak phase
-    - duration: 20
-      arrivalRate: 50
-      name: Cool-down phase
+    - duration: 1 
+      arrivalRate: 60
   http:
     headers:
       Origin: "https://bubblemart.shop"

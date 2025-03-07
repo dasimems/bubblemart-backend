@@ -157,8 +157,8 @@ const createPaymentController: ControllerType = async (req, res) => {
       orderDetails?._id?.toString(),
       JSON.stringify(paymentDetails)
     );
-    const updateOrderDetailsPromise = OrderSchema.findByIdAndUpdate(
-      orderDetails?._id?.toString(),
+    const updateOrderDetailsPromise = OrderSchema.updateOne(
+      { _id: orderDetails?._id },
       {
         paymentReference: paymentDetails?.reference,
         paymentInitiatedAt: paymentInitiatedTime,
