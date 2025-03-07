@@ -4,7 +4,7 @@ import {
   ControllerType,
   ProductDetailsResponseType
 } from "../../utils/types";
-import { AddProductBodyType } from "./addproduct.controller";
+import { AddProductBodyType, logBodySchema } from "./addproduct.controller";
 import {
   constructErrorResponseBody,
   constructSuccessResponseBody,
@@ -14,13 +14,14 @@ import {
 import ProductSchema from "../../models/ProductModel";
 import { MongoError } from "mongodb";
 import { defaultErrorMessage } from "../../utils/variables";
+import LogSchema from "../../models/LogsModel";
 export type UpdateProductBodyType = Partial<Omit<AddProductBodyType, "type">>;
 const addProductBodySchema = Joi.object<UpdateProductBodyType>({
   name: Joi.string().optional().messages({
     "string.empty": "Email is required",
     "any.required": "Email is required"
   }),
-  quantity: Joi.number().greater(0).optional().messages({
+  quantity: Joi.number().optional().messages({
     "any.required": "The quantity field is required",
     "number.base": "The expected input is number",
     "number.greater": "Product quantity must be  at least 1"
@@ -42,6 +43,14 @@ const addProductBodySchema = Joi.object<UpdateProductBodyType>({
     "string.empty": "Description is required",
     "any.required": "Description is required",
     "string.max": "The description must not be greater than 500 characters"
+  }),
+  logs: Joi.array().when("type", {
+    is: "log", // Only validate this when productType is 'log'
+    then: Joi.array().items(logBodySchema).messages({
+      "array.min":
+        'At least one log is required when the product type is "log".'
+    }), // Array should have at least one user object
+    otherwise: Joi.array().empty() // If productType is not 'log', users can be an empty array
   })
 }).unknown(true);
 
@@ -73,7 +82,7 @@ const updateProductController: ControllerType = async (req, res) => {
   }
 
   try {
-    const productDetails = await ProductSchema.exists({ _id: id });
+    const productDetails = await ProductSchema.findOne({ _id: id });
 
     if (!productDetails) {
       return res
@@ -85,8 +94,32 @@ const updateProductController: ControllerType = async (req, res) => {
       amount?: AmountType;
     } = {};
 
-    const { name, description, image, quantity, amount } =
+    const { name, description, image, quantity, amount, logs } =
       body as Partial<AddProductBodyType>;
+
+    let totalLogCount = 0;
+
+    const isLog = productDetails?.type === "log";
+
+    if (isLog) {
+      const availableLogsPromise = LogSchema.countDocuments({
+        productId: id,
+        $or: [{ assignedTo: { $exists: false } }, { assignedTo: null }]
+      });
+      const saveLogsPromise = LogSchema.insertMany(
+        (logs || []).map(({ email, password }) => ({
+          email,
+          password,
+          createdBy: fetchedUserDetails?.id || "",
+          productId: productDetails?.id
+        }))
+      );
+      const [availableLogs, savedLogs] = await Promise.all([
+        availableLogsPromise,
+        saveLogsPromise
+      ]);
+      totalLogCount = availableLogs + savedLogs.filter((log) => !!log).length;
+    }
 
     if (name) {
       updatedData = {
@@ -109,7 +142,7 @@ const updateProductController: ControllerType = async (req, res) => {
     if (quantity) {
       updatedData = {
         ...updatedData,
-        quantity
+        quantity: isLog ? totalLogCount : quantity
       };
     }
     if (amount) {
