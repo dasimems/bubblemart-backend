@@ -46,7 +46,7 @@ const orderDeliveredController: ControllerType = async (req, res) => {
 
   try {
     if (cartId) {
-      const isCartExist = CartSchema.exists({
+      const isCartExist = await CartSchema.exists({
         _id: cartId
       });
 
@@ -81,7 +81,7 @@ const orderDeliveredController: ControllerType = async (req, res) => {
         .status(404)
         .json(constructErrorResponseBody("Order id not found"));
     }
-    const orderExist = OrderSchema.exists({
+    const orderExist = await OrderSchema.exists({
       _id: orderId
     });
     if (!orderExist) {
@@ -89,7 +89,7 @@ const orderDeliveredController: ControllerType = async (req, res) => {
         .status(404)
         .json(constructErrorResponseBody("Order not found"));
     }
-    const orderDetailsPromise = OrderSchema.bulkWrite(
+    await OrderSchema.bulkWrite(
       [
         {
           updateOne: {
@@ -118,7 +118,7 @@ const orderDeliveredController: ControllerType = async (req, res) => {
       { ordered: false }
     );
 
-    const cartUpdatePromise = CartSchema.bulkWrite(
+    await CartSchema.bulkWrite(
       [
         {
           updateMany: {
@@ -129,16 +129,16 @@ const orderDeliveredController: ControllerType = async (req, res) => {
             update: {
               $set: {
                 deliveredAt: deliveredDate,
-                lastUpdatedAt: deliveredDate,
-                $push: {
-                  updates: {
-                    $each: [
-                      {
-                        description: `Product delivered!`,
-                        updatedAt: deliveredDate
-                      }
-                    ]
-                  }
+                lastUpdatedAt: deliveredDate
+              },
+              $push: {
+                updates: {
+                  $each: [
+                    {
+                      description: `Product delivered!`,
+                      updatedAt: deliveredDate
+                    }
+                  ]
                 }
               }
             }
@@ -147,7 +147,7 @@ const orderDeliveredController: ControllerType = async (req, res) => {
       ],
       { ordered: false }
     );
-    await Promise.all([orderDetailsPromise, cartUpdatePromise]);
+    // await Promise.all([orderDetailsPromise, cartUpdatePromise]);
     return res
       .status(200)
       .json(constructSuccessResponseBody({ message: "Order delivered!" }));
