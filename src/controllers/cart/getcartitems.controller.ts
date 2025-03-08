@@ -13,7 +13,7 @@ import {
 } from "../../utils/types";
 import { databaseKeys, defaultErrorMessage } from "../../utils/variables";
 import CartSchema from "../../models/CartModel";
-import { Schema } from "mongoose";
+import { ObjectId, Schema } from "mongoose";
 
 const getCartItemsController: ControllerType = async (req, res) => {
   const { body } = req;
@@ -64,8 +64,9 @@ const getCartItemsController: ControllerType = async (req, res) => {
       productDetails: {
         ...details?.productDetails,
         id: (
-          details?.productDetails?.id as unknown as ProductDetailsResponseType
-        )?.id as unknown as Schema.Types.ObjectId
+          details?.productDetails
+            ?.id as unknown as ProductDetailsResponseType & { _id: ObjectId }
+        )?._id as unknown as Schema.Types.ObjectId
       },
       quantity: details?.quantity,
       totalPrice: generateAmount(
