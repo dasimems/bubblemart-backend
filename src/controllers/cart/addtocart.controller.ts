@@ -15,6 +15,7 @@ import { MongoError } from "mongodb";
 import { defaultErrorMessage } from "../../utils/variables";
 import ProductSchema from "../../models/ProductModel";
 import CartSchema from "../../models/CartModel";
+import { ObjectId } from "mongoose";
 
 export type AddToCartBodyType = {
   productId: string;
@@ -89,10 +90,18 @@ const addToCartController: ControllerType = async (req, res) => {
           .status(404)
           .json(constructErrorResponseBody("Cart doesn't exist any longer!"));
       }
+      const newCartProductDetails = details?.productDetails;
       const data: CartDetailsResponseType = {
         id: details?._id?.toString(),
-        productDetails:
-          details?.productDetails as unknown as CartProductDetails,
+        productDetails: {
+          amount: newCartProductDetails?.amount,
+          description: newCartProductDetails?.description,
+          type: newCartProductDetails?.type,
+          image: newCartProductDetails?.image,
+          name: newCartProductDetails?.name,
+          id: newCartProductDetails?.id as unknown as ObjectId,
+          quantity: productDetails?.quantity || 0
+        },
         quantity: details?.quantity,
         totalPrice: generateAmount(
           (details?.quantity || 0) *
@@ -132,7 +141,7 @@ const addToCartController: ControllerType = async (req, res) => {
         image: newCartProductDetails?.image,
         name: newCartProductDetails?.name,
         id: newCartProductDetails?.id,
-        quantity: productDetails?.quantity
+        quantity: productDetails?.quantity || 0
       },
       quantity: details?.quantity,
       totalPrice: generateAmount(
