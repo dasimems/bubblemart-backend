@@ -28,17 +28,6 @@ const uri = `mongodb+srv://${env?.MONGO_DB_USERNAME}:${env?.MONGO_DB_PASSWORD}@$
 
 const redisClient = createClient({ url: env?.REDIS_URL });
 
-const limiter = rateLimit({
-  store: new RedisStore({
-    sendCommand: (...args: any) => redisClient.sendCommand(args)
-  }),
-  windowMs: 1 * 60 * 1000,
-  max: 20,
-  message: "Too many requests, please try again later.",
-  statusCode: 429,
-  headers: true
-});
-
 (async () => {
   try {
     await redisClient
@@ -52,6 +41,17 @@ const limiter = rateLimit({
     process.exit(1);
   }
 })();
+
+const limiter = rateLimit({
+  store: new RedisStore({
+    sendCommand: (...args: any) => redisClient.sendCommand(args)
+  }),
+  windowMs: 1 * 60 * 1000,
+  max: 20,
+  message: "Too many requests, please try again later.",
+  statusCode: 429,
+  headers: true
+});
 
 export { redisClient };
 
