@@ -141,7 +141,8 @@ const getOrdersController: ControllerType = async (req, res) => {
           ),
           createdAt: details?.createdAt,
           isAvailable: false,
-          deliveredAt: details?.deliveredAt
+          deliveredAt: details?.deliveredAt,
+          paidAt: details?.paidAt
         })),
         checkoutDetails: checkoutDetails ? JSON.parse(checkoutDetails) : null,
         createdAt: order?.createdAt,

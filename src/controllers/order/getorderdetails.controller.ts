@@ -109,7 +109,8 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
         ),
         createdAt: details?.createdAt,
         isAvailable: false,
-        deliveredAt: details?.deliveredAt
+        deliveredAt: details?.deliveredAt,
+        paidAt: details?.paidAt
       })),
       id: orderDetails?._id?.toString(),
       paidAt: orderDetails?.paidAt,
