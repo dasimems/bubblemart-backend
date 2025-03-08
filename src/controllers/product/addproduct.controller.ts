@@ -111,7 +111,7 @@ const addProductController: ControllerType = async (req, res) => {
         amount,
         image,
         description,
-        fetchedUserDetails.id
+        fetchedUserDetails?.id
       )
     );
 

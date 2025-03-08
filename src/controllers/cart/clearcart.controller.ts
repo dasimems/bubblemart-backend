@@ -16,7 +16,7 @@ const clearCartController: ControllerType = async (req, res) => {
 
   try {
     await CartSchema.deleteMany({
-      userId: fetchedUserDetails.id,
+      userId: fetchedUserDetails?.id,
       $or: [{ orderId: { $exists: false } }, { orderId: null }]
     });
     return res.status(204).end();

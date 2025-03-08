@@ -121,7 +121,9 @@ export const updateOrderProduct = async (
   );
   const deliveredDate = new Date();
 
-  const deleteRedisRecordPromise = redisClient.del(orderDetails?.id);
+  const deleteRedisRecordPromise = redisClient.del(
+    orderDetails?.id || orderDetails?._id?.toString()
+  );
   const [logsToUpdate] = await Promise.all([
     logsToUpdatePromise,
     updateCartsPromise,

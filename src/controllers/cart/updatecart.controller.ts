@@ -49,7 +49,7 @@ const updateCartController: ControllerType = async (req, res) => {
       ProductSchema.findById(productId).lean(),
       CartSchema.findOne({
         "productDetails.id": productId,
-        userId: fetchedUserDetails.id,
+        userId: fetchedUserDetails?.id,
         $or: [{ orderId: { $exists: false } }, { orderId: null }]
       }).lean()
     ]);

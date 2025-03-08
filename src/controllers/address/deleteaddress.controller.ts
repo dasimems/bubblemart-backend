@@ -29,7 +29,9 @@ const deleteAddressController: ControllerType = async (req, res) => {
         .json(constructErrorResponseBody("Address not found"));
     }
 
-    if (addressDetails.userId !== fetchedUserDetails.id) {
+    if (
+      addressDetails?.userId?.toString() !== fetchedUserDetails?.id?.toString()
+    ) {
       return res
         .status(403)
         .json(constructErrorResponseBody("Operation not allowed!"));

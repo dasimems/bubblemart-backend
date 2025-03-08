@@ -6,7 +6,11 @@ import {
   formatJoiErrors,
   generateAmount
 } from "../../modules";
-import { CartDetailsResponseType, ControllerType } from "../../utils/types";
+import {
+  CartDetailsResponseType,
+  CartProductDetails,
+  ControllerType
+} from "../../utils/types";
 import { MongoError } from "mongodb";
 import { defaultErrorMessage } from "../../utils/variables";
 import ProductSchema from "../../models/ProductModel";
@@ -45,7 +49,7 @@ const subtractFromCartController: ControllerType = async (req, res) => {
       ProductSchema.findById(productId).lean(),
       CartSchema.findOne({
         "productDetails.id": productId,
-        userId: fetchedUserDetails.id,
+        userId: fetchedUserDetails?.id,
         $or: [{ orderId: { $exists: false } }, { orderId: null }]
       })
     ]);
@@ -64,7 +68,7 @@ const subtractFromCartController: ControllerType = async (req, res) => {
         .json(constructErrorResponseBody("Cart item not found!"));
     }
     if (quantity >= cartDetails.quantity) {
-      await CartSchema.findByIdAndDelete(cartDetails.id);
+      await CartSchema.deleteOne({ _id: cartDetails.id });
       return res.status(204).end();
     }
     cartDetails.quantity -= quantity;
@@ -76,15 +80,15 @@ const subtractFromCartController: ControllerType = async (req, res) => {
       }
     ];
     await cartDetails.save();
-    const details = await CartSchema.findById(cartDetails.id);
+    const details = await CartSchema.findById(cartDetails.id).lean();
     if (!details) {
       return res
         .status(404)
         .json(constructErrorResponseBody("Cart doesn't exist any longer!"));
     }
     const data: CartDetailsResponseType = {
-      id: details?.id,
-      productDetails: details?.productDetails,
+      id: details?._id?.toString(),
+      productDetails: details?.productDetails as unknown as CartProductDetails,
       quantity: details?.quantity,
       totalPrice: generateAmount(
         (details?.quantity || 0) * (details?.productDetails?.amount?.whole || 0)

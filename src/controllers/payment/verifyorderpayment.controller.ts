@@ -100,7 +100,7 @@ const verifyPaymentController: ControllerType = async (req, res) => {
         > &
           CartDetailsType)[]
       )?.map((details) => ({
-        id: details.id,
+        id: details._id?.toString(),
         productDetails: details.productDetails,
         quantity: details.quantity,
         totalPrice: generateAmount(

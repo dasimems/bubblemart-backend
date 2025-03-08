@@ -100,9 +100,9 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
         > &
           CartDetailsType)[]
       )?.map((details) => ({
-        id: details.id,
-        productDetails: details.productDetails,
-        quantity: details.quantity,
+        id: details?._id?.toString(),
+        productDetails: details?.productDetails,
+        quantity: details?.quantity,
         totalPrice: generateAmount(
           (details?.quantity || 0) *
             (details?.productDetails?.amount?.whole || 0)
@@ -129,7 +129,7 @@ const getOrderDetailsController: ControllerType = async (req, res) => {
               avatar: userDetails?.avatar,
               createdAt: userDetails?.createdAt,
               email: userDetails?.email,
-              id: userDetails?.id?.toString() as string,
+              id: userDetails?._id?.toString() as string,
               name: userDetails?.name,
               role: userDetails?.role,
               updatedAt: userDetails?.updatedAt

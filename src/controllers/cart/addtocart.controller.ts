@@ -54,14 +54,14 @@ const addToCartController: ControllerType = async (req, res) => {
       ProductSchema.findById(productId).lean(),
       CartSchema.findOne({
         "productDetails.id": productId,
-        userId: fetchedUserDetails.id,
+        userId: fetchedUserDetails?.id,
         $or: [{ orderId: { $exists: false } }, { orderId: null }]
       })
     ]);
 
     if (!productDetails) {
       if (cartDetails) {
-        await CartSchema.findByIdAndDelete(cartDetails.id);
+        await CartSchema.deleteOne({ _id: cartDetails?.id });
       }
       return res
         .status(404)

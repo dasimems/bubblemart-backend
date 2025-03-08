@@ -43,7 +43,7 @@ const getOrdersController: ControllerType = async (req, res) => {
     const totalProducts = await OrderSchema.countDocuments(
       !isAdmin
         ? {
-            userId: fetchedUserDetails.id
+            userId: fetchedUserDetails?.id
           }
         : {}
     );
@@ -60,7 +60,7 @@ const getOrdersController: ControllerType = async (req, res) => {
     let orderPromise = OrderSchema.find(
       !isAdmin
         ? {
-            userId: fetchedUserDetails.id
+            userId: fetchedUserDetails?.id
           }
         : {}
     ).populate<CartDetailsType | UserDetailsType>({
@@ -89,7 +89,7 @@ const getOrdersController: ControllerType = async (req, res) => {
       .exec(); /* OrderSchema.find(
       !isAdmin
         ? {
-            userId: fetchedUserDetails.id
+            userId: fetchedUserDetails?.id
           }
         : {}
     )
@@ -132,9 +132,9 @@ const getOrdersController: ControllerType = async (req, res) => {
           > &
             CartDetailsType)[]
         )?.map((details) => ({
-          id: details.id,
-          productDetails: details.productDetails,
-          quantity: details.quantity,
+          id: details?._id?.toString(),
+          productDetails: details?.productDetails,
+          quantity: details?.quantity,
           totalPrice: generateAmount(
             (details?.quantity || 0) *
               (details?.productDetails?.amount?.whole || 0)
@@ -153,7 +153,7 @@ const getOrdersController: ControllerType = async (req, res) => {
                 avatar: userDetails?.avatar,
                 createdAt: userDetails?.createdAt,
                 email: userDetails?.email,
-                id: userDetails?.id?.toString() as string,
+                id: userDetails?._id?.toString() as string,
                 name: userDetails?.name,
                 role: userDetails?.role,
                 updatedAt: userDetails?.updatedAt

@@ -9,6 +9,7 @@ import {
 } from "../../modules";
 import {
   AuthenticationDestructuredType,
+  CartProductDetails,
   ContactInformationType,
   ControllerType,
   OrderDetailsResponseType
@@ -17,6 +18,7 @@ import { defaultErrorMessage } from "../../utils/variables";
 import OrderSchema from "../../models/OrdersModel";
 import Joi, { ValidationError } from "joi";
 import { phoneNumberRegExp } from "../../utils/regex";
+import { ObjectId } from "mongoose";
 
 export type CreateOrderBodyType = ContactInformationType &
   AuthenticationDestructuredType;
@@ -68,20 +70,19 @@ const createOrderController: ControllerType = async (req, res) => {
 
   try {
     const fetchCartPromise = CartSchema.find({
-      userId: fetchedUserDetails.id,
+      userId: fetchedUserDetails?.id,
       $or: [{ orderId: { $exists: false } }, { orderId: null }]
-    });
+    }).lean();
 
-    const availableGiftCountPromise = CartSchema.countDocuments({
-      userId: fetchedUserDetails.id,
+    const availableGiftCountPromise = CartSchema.exists({
+      userId: fetchedUserDetails?.id,
       $or: [{ orderId: { $exists: false } }, { orderId: null }],
       "productDetails.type": "gift" // Check if order is not null
     });
-    const [cartDetails, availableGiftCount] = await Promise.all([
+    const [cartDetails, hasAvailableGift] = await Promise.all([
       fetchCartPromise,
       availableGiftCountPromise
     ]);
-    const hasAvailableGift = availableGiftCount > 0;
 
     if (hasAvailableGift) {
       const { error } = createOrderBodySchema.validate(body, {
@@ -121,7 +122,7 @@ const createOrderController: ControllerType = async (req, res) => {
       latitude
     };
 
-    const cartItems = cartDetails.map((cart) => cart.id);
+    const cartItems = cartDetails.map((cart) => cart._id?.toString());
     if (cartItems.length < 1) {
       return res
         .status(400)
@@ -129,7 +130,7 @@ const createOrderController: ControllerType = async (req, res) => {
     }
     const orderDetails = await OrderSchema.create(
       createOrder(
-        cartItems,
+        cartItems as unknown as ObjectId[],
         fetchedUserDetails?.id,
         hasAvailableGift ? contactInformation : undefined
       )
@@ -146,28 +147,31 @@ const createOrderController: ControllerType = async (req, res) => {
     const { id, createdAt, status } = orderDetails;
     await Promise.all(
       cartItems.map((id) =>
-        CartSchema.findByIdAndUpdate(id, {
-          orderId: orderDetails?.id,
-          $push: {
-            updates: {
-              $each: [
-                {
-                  description: `Created order on ${new Date()}`,
-                  updatedAt: new Date()
-                }
-              ]
+        CartSchema.updateOne(
+          { _id: id },
+          {
+            orderId: orderDetails?.id,
+            $push: {
+              updates: {
+                $each: [
+                  {
+                    description: `Created order on ${new Date()}`,
+                    updatedAt: new Date()
+                  }
+                ]
+              }
             }
           }
-        }).lean()
+        ).lean()
       )
     );
     const data: OrderDetailsResponseType = {
       id,
       createdAt,
       cartItems: cartDetails.map(
-        ({ id, productDetails, quantity, deliveredAt }) => ({
-          id,
-          productDetails,
+        ({ _id, productDetails, quantity, deliveredAt }) => ({
+          id: _id?.toString(),
+          productDetails: productDetails as CartProductDetails,
           quantity,
           totalPrice: generateAmount(
             (quantity || 0) * (productDetails?.amount?.whole || 0)

@@ -30,7 +30,7 @@ const getAddressesController: ControllerType = async (req, res) => {
   try {
     const formattedPage = parseInt(page?.toString());
     const totalProducts = await AddressSchema.countDocuments({
-      userId: fetchedUserDetails.id
+      userId: fetchedUserDetails?.id
     });
     const maxPage = Math.ceil(totalProducts / MAX_RETURN_ADDRESS_COUNT) || 1;
     const host = req.hostname || req.get("host") || "";
@@ -42,7 +42,7 @@ const getAddressesController: ControllerType = async (req, res) => {
     }
     const skip = MAX_RETURN_ADDRESS_COUNT * (formattedPage - 1);
     const fetchedProduct = await AddressSchema.find({
-      userId: fetchedUserDetails.id
+      userId: fetchedUserDetails?.id
     })
       .lean()
       .skip(skip)

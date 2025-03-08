@@ -43,7 +43,7 @@ const updateAddressController: ControllerType = async (req, res) => {
     }
 
     if (
-      addressDetails.userId?.toString() !== fetchedUserDetails.id?.toString()
+      addressDetails.userId?.toString() !== fetchedUserDetails?.id?.toString()
     ) {
       return res
         .status(403)

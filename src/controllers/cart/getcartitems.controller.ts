@@ -24,7 +24,7 @@ const getCartItemsController: ControllerType = async (req, res) => {
 
   try {
     const fetchCartPromise = CartSchema.find({
-      userId: fetchedUserDetails.id,
+      userId: fetchedUserDetails?.id,
       $or: [{ orderId: { $exists: false } }, { orderId: null }]
     })
       .populate<ProductDetailsType>({
@@ -37,7 +37,7 @@ const getCartItemsController: ControllerType = async (req, res) => {
       })
       .lean();
     const availableGiftCountPromise = CartSchema.countDocuments({
-      userId: fetchedUserDetails.id,
+      userId: fetchedUserDetails?.id,
       $or: [{ orderId: { $exists: false } }, { orderId: null }],
       "productDetails.type": "gift" // Check if order is not null
     });
