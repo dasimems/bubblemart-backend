@@ -26,15 +26,17 @@ const getCartItemsController: ControllerType = async (req, res) => {
     const fetchCartPromise = CartSchema.find({
       userId: fetchedUserDetails.id,
       $or: [{ orderId: { $exists: false } }, { orderId: null }]
-    }).populate<ProductDetailsType>({
-      path: "productDetails.id",
-      model: databaseKeys.products, // Replace 'Product' with your actual Product model name
-      select: "-__v", // Exclude unnecessary fields if needed
-      options: {
-        strictPopulate: false // Ensures no errors if the product doesn't exist
-      }
-    });
-    /* .lean() */ const availableGiftCountPromise = CartSchema.countDocuments({
+    })
+      .populate<ProductDetailsType>({
+        path: "productDetails.id",
+        model: databaseKeys.products, // Replace 'Product' with your actual Product model name
+        select: "-__v", // Exclude unnecessary fields if needed
+        options: {
+          strictPopulate: false // Ensures no errors if the product doesn't exist
+        }
+      })
+      .lean();
+    const availableGiftCountPromise = CartSchema.countDocuments({
       userId: fetchedUserDetails.id,
       $or: [{ orderId: { $exists: false } }, { orderId: null }],
       "productDetails.type": "gift" // Check if order is not null

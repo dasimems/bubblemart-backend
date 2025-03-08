@@ -174,7 +174,7 @@ const updateProductController: ControllerType = async (req, res) => {
         }
       },
       { new: true }
-    ); /* .lean() */
+    ).lean();
     if (!newProductDetails) {
       return res
         .status(500)

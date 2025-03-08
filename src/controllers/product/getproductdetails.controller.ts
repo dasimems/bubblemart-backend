@@ -19,9 +19,7 @@ const getProductDetails: ControllerType = async (req, res) => {
   }
 
   try {
-    const productDetails = await ProductSchema.findById(
-      productId
-    ); /* .lean() */
+    const productDetails = await ProductSchema.findById(productId).lean();
 
     let totalSales: number | null = null;
 

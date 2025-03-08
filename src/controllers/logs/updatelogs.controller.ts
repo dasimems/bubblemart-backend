@@ -13,6 +13,7 @@ import {
 import { defaultErrorMessage } from "../../utils/variables";
 import Joi, { ValidationError } from "joi";
 import LogSchema from "../../models/LogsModel";
+import { ObjectId } from "mongoose";
 
 type LogBodyType = LogType & AuthenticationDestructuredType;
 
@@ -92,7 +93,7 @@ const updateLogController: ControllerType = async (req, res) => {
         }
       },
       { new: true }
-    ); /* .lean() */
+    ).lean();
     if (!newLog) {
       return res
         .status(500)
@@ -106,7 +107,7 @@ const updateLogController: ControllerType = async (req, res) => {
       email: newLog.email,
       password: newLog.password,
       id: newLog._id?.toString(),
-      assignedTo: newLog.assignedTo
+      assignedTo: newLog.assignedTo as unknown as ObjectId
     };
     return res.status(200).json(constructSuccessResponseBody(data));
   } catch (error) {

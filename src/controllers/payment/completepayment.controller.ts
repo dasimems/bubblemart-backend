@@ -77,7 +77,7 @@ export const updateOrderProduct = async (
         }
       }
     }
-  ); /* .lean() */
+  ).lean();
   const cartList = (
     orderDetails?.cartItems as unknown as (CartDetailsType & {
       _id: Types.ObjectId;
@@ -216,15 +216,17 @@ const completePaymentController: ControllerType = async (req, res) => {
 
       const orderDetails = await OrderSchema.findOne({
         paymentReference: reference
-      }).populate<CartDetailsType>({
-        path: "cartItems",
-        model: databaseKeys.carts,
-        select: "-__v",
-        options: {
-          strictPopulate: false // Ensures no errors if the product doesn't exist
-        }
-      });
-      /* .lean() */ if (!orderDetails) {
+      })
+        .populate<CartDetailsType>({
+          path: "cartItems",
+          model: databaseKeys.carts,
+          select: "-__v",
+          options: {
+            strictPopulate: false // Ensures no errors if the product doesn't exist
+          }
+        })
+        .lean();
+      if (!orderDetails) {
         return res
           .status(404)
           .json(constructErrorResponseBody("Unable to determine order!"));
@@ -233,7 +235,20 @@ const completePaymentController: ControllerType = async (req, res) => {
       // const allLogProducts = cartList.filter(
       //   (cart) => cart?.productDetails?.type === "log"
       // );
-      await updateOrderProduct(orderDetails, paid_at);
+      await updateOrderProduct(
+        orderDetails as Document<
+          unknown,
+          {},
+          MergeType<OrderDetailsType, CartDetailsType>
+        > &
+          Omit<OrderDetailsType, keyof CartDetailsType> &
+          CartDetailsType & {
+            _id: Types.ObjectId;
+          } & {
+            __v?: number;
+          },
+        paid_at
+      );
       return res
         .status(200)
         .json(constructSuccessResponseBody({ message: "Payment verified" }));

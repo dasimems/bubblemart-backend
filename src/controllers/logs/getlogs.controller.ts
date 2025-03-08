@@ -16,7 +16,7 @@ import {
   defaultErrorMessage,
   MAX_RETURN_ITEM_COUNT
 } from "../../utils/variables";
-import { Document } from "mongoose";
+import { Document, ObjectId } from "mongoose";
 
 const getLogsController: ControllerType = async (req, res) => {
   const { query, body, params } = req;
@@ -70,7 +70,7 @@ const getLogsController: ControllerType = async (req, res) => {
       })
       .skip(skip)
       .limit(parseInt(max?.toString()))
-      /* .lean() */
+      .lean()
       .exec();
     const formatedLog: LogDetailsResponseType[] = fetchedLogs.map((item) => {
       const productDetails = item?.productId as unknown as Document<
@@ -84,7 +84,7 @@ const getLogsController: ControllerType = async (req, res) => {
         email: item.email,
         password: item.password,
         id: item._id?.toString(),
-        assignedTo: item.assignedTo,
+        assignedTo: item.assignedTo as unknown as ObjectId,
         productId: {
           amount: productDetails?.amount,
           description: productDetails?.description,

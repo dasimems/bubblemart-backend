@@ -145,21 +145,20 @@ const createOrderController: ControllerType = async (req, res) => {
     }
     const { id, createdAt, status } = orderDetails;
     await Promise.all(
-      cartItems.map(
-        (id) =>
-          CartSchema.findByIdAndUpdate(id, {
-            orderId: orderDetails?.id,
-            $push: {
-              updates: {
-                $each: [
-                  {
-                    description: `Created order on ${new Date()}`,
-                    updatedAt: new Date()
-                  }
-                ]
-              }
+      cartItems.map((id) =>
+        CartSchema.findByIdAndUpdate(id, {
+          orderId: orderDetails?.id,
+          $push: {
+            updates: {
+              $each: [
+                {
+                  description: `Created order on ${new Date()}`,
+                  updatedAt: new Date()
+                }
+              ]
             }
-          }) /* .lean() */
+          }
+        }).lean()
       )
     );
     const data: OrderDetailsResponseType = {

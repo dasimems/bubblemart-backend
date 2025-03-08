@@ -27,7 +27,7 @@ const getAddressDetailsController: ControllerType = async (req, res) => {
   }
 
   try {
-    const addressDetails = await AddressSchema.findById(id); /* .lean() */
+    const addressDetails = await AddressSchema.findById(id).lean();
     if (!addressDetails) {
       return res
         .status(404)

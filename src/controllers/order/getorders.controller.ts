@@ -85,7 +85,7 @@ const getOrdersController: ControllerType = async (req, res) => {
     const orderList = await orderPromise
       .skip(skip)
       .limit(MAX_RETURN_ITEM_COUNT)
-      /* .lean() */
+      .lean()
       .exec(); /* OrderSchema.find(
       !isAdmin
         ? {

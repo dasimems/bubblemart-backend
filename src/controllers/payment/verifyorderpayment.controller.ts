@@ -8,12 +8,13 @@ import { databaseKeys, defaultErrorMessage } from "../../utils/variables";
 import {
   CartDetailsType,
   ControllerType,
-  OrderDetailsResponseType
+  OrderDetailsResponseType,
+  OrderDetailsType
 } from "../../utils/types";
 import OrderSchema from "../../models/OrdersModel";
 import paystackApi from "../../apis/paystack.api";
 import { PaystackVerificationResponse } from "../../apis/paystack";
-import { Document } from "mongoose";
+import { Document, MergeType, Types } from "mongoose";
 import { updateOrderProduct } from "./completepayment.controller";
 
 const verifyPaymentController: ControllerType = async (req, res) => {
@@ -37,17 +38,17 @@ const verifyPaymentController: ControllerType = async (req, res) => {
   }
 
   try {
-    const orderDetails = await OrderSchema.findById(
-      id
-    ).populate<CartDetailsType>({
-      path: "cartItems",
-      model: databaseKeys.carts,
-      select: "-__v",
-      options: {
-        strictPopulate: false // Ensures no errors if the product doesn't exist
-      }
-    });
-    /* .lean() */ if (!orderDetails) {
+    const orderDetails = await OrderSchema.findById(id)
+      .populate<CartDetailsType>({
+        path: "cartItems",
+        model: databaseKeys.carts,
+        select: "-__v",
+        options: {
+          strictPopulate: false // Ensures no errors if the product doesn't exist
+        }
+      })
+      .lean();
+    if (!orderDetails) {
       return res
         .status(404)
         .json(constructErrorResponseBody("Order details not found!"));
@@ -75,7 +76,20 @@ const verifyPaymentController: ControllerType = async (req, res) => {
         .json(constructErrorResponseBody("Payment not successful!"));
     }
     if (!orderDetails?.paidAt) {
-      await updateOrderProduct(orderDetails, paid_at);
+      await updateOrderProduct(
+        orderDetails as Document<
+          unknown,
+          {},
+          MergeType<OrderDetailsType, CartDetailsType>
+        > &
+          Omit<OrderDetailsType, keyof CartDetailsType> &
+          CartDetailsType & {
+            _id: Types.ObjectId;
+          } & {
+            __v?: number;
+          },
+        paid_at
+      );
     }
     const dataToSend: OrderDetailsResponseType = {
       cartItems: (

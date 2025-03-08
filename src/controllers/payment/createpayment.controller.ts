@@ -91,17 +91,17 @@ const createPaymentController: ControllerType = async (req, res) => {
   }
 
   try {
-    const orderDetails = await OrderSchema.findById(
-      id
-    ).populate<CartDetailsType>({
-      path: "cartItems",
-      model: databaseKeys.carts,
-      select: "-__v",
-      options: {
-        strictPopulate: false // Ensures no errors if the product doesn't exist
-      }
-    });
-    /* .lean() */ if (!orderDetails) {
+    const orderDetails = await OrderSchema.findById(id)
+      .populate<CartDetailsType>({
+        path: "cartItems",
+        model: databaseKeys.carts,
+        select: "-__v",
+        options: {
+          strictPopulate: false // Ensures no errors if the product doesn't exist
+        }
+      })
+      .lean();
+    if (!orderDetails) {
       return res
         .status(404)
         .json(constructErrorResponseBody("Order details not found!"));

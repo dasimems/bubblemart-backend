@@ -23,7 +23,7 @@ const deleteCartItemController: ControllerType = async (req, res) => {
   }
 
   try {
-    const cartDetails = await CartSchema.findById(id); /* .lean() */
+    const cartDetails = await CartSchema.findById(id).lean();
     if (!cartDetails) {
       return res
         .status(404)

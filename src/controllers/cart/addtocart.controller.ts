@@ -2,6 +2,7 @@ import Joi, { ValidationError } from "joi";
 import {
   AuthenticationDestructuredType,
   CartDetailsResponseType,
+  CartProductDetails,
   ControllerType
 } from "../../utils/types";
 import {
@@ -50,7 +51,7 @@ const addToCartController: ControllerType = async (req, res) => {
   try {
     const { productId, quantity } = body as AddToCartBodyType;
     const [productDetails, cartDetails] = await Promise.all([
-      ProductSchema.findById(productId) /* .lean() */,
+      ProductSchema.findById(productId).lean(),
       CartSchema.findOne({
         "productDetails.id": productId,
         userId: fetchedUserDetails.id,
@@ -82,7 +83,7 @@ const addToCartController: ControllerType = async (req, res) => {
         }
       ];
       await cartDetails.save();
-      const details = await CartSchema.findById(cartDetails.id); /* .lean() */
+      const details = await CartSchema.findOne({ _id: cartDetails.id }).lean();
       if (!details) {
         return res
           .status(404)
@@ -90,7 +91,8 @@ const addToCartController: ControllerType = async (req, res) => {
       }
       const data: CartDetailsResponseType = {
         id: details?._id?.toString(),
-        productDetails: details?.productDetails,
+        productDetails:
+          details?.productDetails as unknown as CartProductDetails,
         quantity: details?.quantity,
         totalPrice: generateAmount(
           (details?.quantity || 0) *
