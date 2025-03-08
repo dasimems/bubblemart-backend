@@ -12,7 +12,6 @@ import CartSchema from "../../models/CartModel";
 import OrderSchema from "../../models/OrdersModel";
 import { Types } from "mongoose";
 
-const deliveredDate = new Date();
 const changeOrderToDelivered = async (orderId: Types.ObjectId | string) => {
   const cartYetToBeDeliveredCount = await CartSchema.countDocuments({
     orderId,
@@ -22,7 +21,7 @@ const changeOrderToDelivered = async (orderId: Types.ObjectId | string) => {
     await OrderSchema.updateOne(
       { _id: orderId },
       {
-        $set: { deliveredAt: deliveredDate, status: "DELIVERED" },
+        $set: { deliveredAt: new Date(), status: "DELIVERED" },
         $push: {
           updates: {
             description: "Order delivered!",
@@ -56,14 +55,14 @@ const orderDeliveredController: ControllerType = async (req, res) => {
           .json(constructErrorResponseBody("Cart not found"));
       }
       const cartDetails = await CartSchema.findByIdAndUpdate(cartId, {
-        lastUpdatedAt: deliveredDate,
-        deliveredAt: deliveredDate,
+        lastUpdatedAt: new Date(),
+        deliveredAt: new Date(),
         $push: {
           updates: {
             $each: [
               {
                 description: `Product delivered!`,
-                updatedAt: deliveredDate
+                updatedAt: new Date()
               }
             ]
           }
@@ -98,15 +97,15 @@ const orderDeliveredController: ControllerType = async (req, res) => {
               $or: [{ deliveredAt: null }, { deliveredAt: { $exists: false } }]
             },
             update: {
-              lastUpdatedAt: deliveredDate,
-              deliveredAt: deliveredDate,
+              lastUpdatedAt: new Date(),
+              deliveredAt: new Date(),
               status: "DELIVERED",
               $push: {
                 updates: {
                   $each: [
                     {
                       description: `Order delivered!`,
-                      updatedAt: deliveredDate
+                      updatedAt: new Date()
                     }
                   ]
                 }
@@ -128,15 +127,15 @@ const orderDeliveredController: ControllerType = async (req, res) => {
             },
             update: {
               $set: {
-                deliveredAt: deliveredDate,
-                lastUpdatedAt: deliveredDate
+                deliveredAt: new Date(),
+                lastUpdatedAt: new Date()
               },
               $push: {
                 updates: {
                   $each: [
                     {
                       description: `Product delivered!`,
-                      updatedAt: deliveredDate
+                      updatedAt: new Date()
                     }
                   ]
                 }
