@@ -59,20 +59,23 @@ const getCartItemsController: ControllerType = async (req, res) => {
       )
     );
 
-    const carts = cartItemsWithValidProduct?.map((details) => ({
-      id: details?._id?.toString(),
-      productDetails: {
-        ...details?.productDetails,
-        id: (
-          details?.productDetails
-            ?.id as unknown as ProductDetailsResponseType & { _id: ObjectId }
-        )?._id as unknown as Schema.Types.ObjectId
-      },
-      quantity: details?.quantity,
-      totalPrice: generateAmount(
-        (details?.quantity || 0) * (details?.productDetails?.amount?.whole || 0)
-      )
-    }));
+    const carts = cartItemsWithValidProduct?.map((details) => {
+      const productDetails = details?.productDetails
+        ?.id as unknown as ProductDetailsResponseType & { _id: ObjectId };
+      return {
+        id: details?._id?.toString(),
+        productDetails: {
+          ...details?.productDetails,
+          id: productDetails?._id as unknown as Schema.Types.ObjectId,
+          quantity: productDetails?.quantity
+        },
+        quantity: details?.quantity,
+        totalPrice: generateAmount(
+          (details?.quantity || 0) *
+            (details?.productDetails?.amount?.whole || 0)
+        )
+      };
+    });
     const data: CartResponseType = {
       carts,
       isAddressNeeded: availableGiftCount > 0

@@ -123,7 +123,10 @@ const addToCartController: ControllerType = async (req, res) => {
 
     const data: CartDetailsResponseType = {
       id: details?.id,
-      productDetails: details?.productDetails,
+      productDetails: {
+        ...details?.productDetails,
+        quantity: productDetails?.quantity
+      },
       quantity: details?.quantity,
       totalPrice: generateAmount(
         (details?.quantity || 0) * (details?.productDetails?.amount?.whole || 0)

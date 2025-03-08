@@ -88,7 +88,10 @@ const subtractFromCartController: ControllerType = async (req, res) => {
     }
     const data: CartDetailsResponseType = {
       id: details?._id?.toString(),
-      productDetails: details?.productDetails as unknown as CartProductDetails,
+      productDetails: {
+        ...details?.productDetails,
+        quantity: productDetails?.quantity
+      } as unknown as CartProductDetails,
       quantity: details?.quantity,
       totalPrice: generateAmount(
         (details?.quantity || 0) * (details?.productDetails?.amount?.whole || 0)
