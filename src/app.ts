@@ -9,6 +9,7 @@ import corsMiddleWare from "./middlewares/cors.middleware";
 import mongoose from "mongoose";
 import { createClient } from "redis";
 import rateLimit from "express-rate-limit";
+import RedisStore from "rate-limit-redis";
 import csrf from "csurf";
 
 dotenv.config();
@@ -18,16 +19,19 @@ export const { env } = process;
 
 const uri = `mongodb+srv://${env?.MONGO_DB_USERNAME}:${env?.MONGO_DB_PASSWORD}@${env?.MONGO_CLUSTER_STRING}.mongodb.net/?retryWrites=true&w=majority&appName=${env?.MONGO_DB_APPNAME}`;
 
-const csrfProtection = csrf({
-  cookie: true,
-  httpOnly: true, // Prevent JS from accessing the CSRF token
-  secure: process.env.NODE_ENV === "production", // Use secure cookies in production (HTTPS)
-  sameSite: "Strict"
-});
+// const csrfProtection = csrf({
+//   cookie: true,
+//   httpOnly: true, // Prevent JS from accessing the CSRF token
+//   secure: process.env.NODE_ENV === "production", // Use secure cookies in production (HTTPS)
+//   sameSite: "Strict"
+// });
 
 const redisClient = createClient({ url: env?.REDIS_URL });
 
 const limiter = rateLimit({
+  store: new RedisStore({
+    sendCommand: (...args: any) => redisClient.sendCommand(args)
+  }),
   windowMs: 1 * 60 * 1000,
   max: 20,
   message: "Too many requests, please try again later.",
@@ -36,12 +40,17 @@ const limiter = rateLimit({
 });
 
 (async () => {
-  await redisClient
-    .on("error", (err) => {
-      console.log("Redis Client Error", err);
-      process.exit(1);
-    })
-    .connect();
+  try {
+    await redisClient
+      .once("error", (err) => {
+        console.log("Redis Client Error", err);
+        process.exit(1);
+      })
+      .connect();
+  } catch (err) {
+    console.error("Redis Client Error", err);
+    process.exit(1);
+  }
 })();
 
 export { redisClient };
@@ -58,6 +67,14 @@ export const connectDB = async () => {
     process.exit(1);
   }
 };
+
+process.on("SIGINT", async () => {
+  await redisClient.disconnect();
+  await mongoose.connection.close();
+  console.log("MongoDB disconnected");
+  process.exit(0);
+});
+
 app.set("trust proxy", 1);
 app.use(corsMiddleWare);
 app.use(limiter);

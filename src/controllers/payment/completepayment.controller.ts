@@ -180,11 +180,11 @@ export const updateOrderProduct = async (
     }))
   );
   await Promise.all([assignUserToLogPromise, updateCartPromise]);
-  const cartYetToBeDeliveredCount = await CartSchema.countDocuments({
+  const cartExist = await CartSchema.exists({
     orderId,
     $or: [{ deliveredAt: null }, { deliveredAt: { $exists: false } }]
   });
-  if (cartYetToBeDeliveredCount === 0) {
+  if (!cartExist) {
     await OrderSchema.updateOne(
       { _id: orderId },
       {
