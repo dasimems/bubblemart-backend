@@ -121,10 +121,17 @@ const addToCartController: ControllerType = async (req, res) => {
       }
     });
 
+    const newCartProductDetails = details?.productDetails;
+
     const data: CartDetailsResponseType = {
       id: details?.id,
       productDetails: {
-        ...details?.productDetails,
+        amount: newCartProductDetails?.amount,
+        description: newCartProductDetails?.description,
+        type: newCartProductDetails?.type,
+        image: newCartProductDetails?.image,
+        name: newCartProductDetails?.name,
+        id: newCartProductDetails?.id,
         quantity: productDetails?.quantity
       },
       quantity: details?.quantity,
