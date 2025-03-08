@@ -13,11 +13,14 @@ import OrderSchema from "../../models/OrdersModel";
 import { Types } from "mongoose";
 
 const changeOrderToDelivered = async (orderId: Types.ObjectId | string) => {
-  const cartYetToBeDeliveredCount = await CartSchema.countDocuments({
+  if (!orderId) {
+    return;
+  }
+  const cartExists = await CartSchema.exists({
     orderId,
     $or: [{ deliveredAt: null }, { deliveredAt: { $exists: false } }]
   });
-  if (cartYetToBeDeliveredCount === 0) {
+  if (!cartExists) {
     await OrderSchema.updateOne(
       { _id: orderId },
       {
@@ -43,122 +46,111 @@ const orderDeliveredController: ControllerType = async (req, res) => {
 
   const { cartId, orderId } = params || {};
 
-  //   try {
-  //     if (cartId) {
-  //       const isCartExist = await CartSchema.exists({
-  //         _id: cartId
-  //       });
+  try {
+    if (cartId) {
+      const isCartExist = await CartSchema.exists({
+        _id: cartId
+      });
 
-  //       if (!isCartExist) {
-  //         return res
-  //           .status(404)
-  //           .json(constructErrorResponseBody("Cart not found"));
-  //       }
-  //       const cartDetails = await CartSchema.findByIdAndUpdate(cartId, {
-  //         lastUpdatedAt: new Date(),
-  //         deliveredAt: new Date(),
-  //         $push: {
-  //           updates: {
-  //             $each: [
-  //               {
-  //                 description: `Product delivered!`,
-  //                 updatedAt: new Date()
-  //               }
-  //             ]
-  //           }
-  //         }
-  //       });
-  //       if (cartDetails && cartDetails.orderId) {
-  //         await changeOrderToDelivered(cartDetails.orderId?.toString());
-  //       }
-  //       return res
-  //         .status(200)
-  //         .json(constructSuccessResponseBody({ message: "Cart delivered!" }));
-  //     }
-  //     if (!orderId) {
-  //       return res
-  //         .status(404)
-  //         .json(constructErrorResponseBody("Order id not found"));
-  //     }
-  //     const orderExist = await OrderSchema.exists({
-  //       _id: orderId
-  //     });
-  //     if (!orderExist) {
-  //       return res
-  //         .status(404)
-  //         .json(constructErrorResponseBody("Order not found"));
-  //     }
-  //     await OrderSchema.bulkWrite(
-  //       [
-  //         {
-  //           updateOne: {
-  //             filter: {
-  //               _id: orderId,
-  //               $or: [{ deliveredAt: null }, { deliveredAt: { $exists: false } }]
-  //             },
-  //             update: {
-  //               lastUpdatedAt: new Date(),
-  //               deliveredAt: new Date(),
-  //               status: "DELIVERED",
-  //               $push: {
-  //                 updates: {
-  //                   $each: [
-  //                     {
-  //                       description: `Order delivered!`,
-  //                       updatedAt: new Date()
-  //                     }
-  //                   ]
-  //                 }
-  //               }
-  //             }
-  //           }
-  //         }
-  //       ],
-  //       { ordered: false }
-  //     );
+      if (!isCartExist) {
+        return res
+          .status(404)
+          .json(constructErrorResponseBody("Cart not found"));
+      }
+      const cartDetails = await CartSchema.findByIdAndUpdate(cartId, {
+        lastUpdatedAt: new Date(),
+        deliveredAt: new Date(),
+        $push: {
+          updates: {
+            $each: [
+              {
+                description: `Product delivered!`,
+                updatedAt: new Date()
+              }
+            ]
+          }
+        }
+      });
+      if (cartDetails && cartDetails.orderId) {
+        await changeOrderToDelivered(cartDetails.orderId?.toString());
+      }
+      return res
+        .status(200)
+        .json(constructSuccessResponseBody({ message: "Cart delivered!" }));
+    }
+    if (!orderId) {
+      return res
+        .status(404)
+        .json(constructErrorResponseBody("Order id not found"));
+    }
+    const orderExist = await OrderSchema.exists({
+      _id: orderId
+    });
+    if (!orderExist) {
+      return res
+        .status(404)
+        .json(constructErrorResponseBody("Order not found"));
+    }
+    await OrderSchema.updateOne(
+      {
+        _id: orderId,
+        $or: [{ deliveredAt: null }, { deliveredAt: { $exists: false } }]
+      },
+      {
+        lastUpdatedAt: new Date(),
+        deliveredAt: new Date(),
+        status: "DELIVERED",
+        $push: {
+          updates: {
+            description: "Order delivered!",
+            updatedAt: new Date()
+          }
+        }
+      }
+    );
 
-  //     await CartSchema.bulkWrite(
-  //       [
-  //         {
-  //           updateMany: {
-  //             filter: {
-  //               orderId: orderId,
-  //               $or: [{ deliveredAt: null }, { deliveredAt: { $exists: false } }]
-  //             },
-  //             update: {
-  //               $set: {
-  //                 deliveredAt: new Date(),
-  //                 lastUpdatedAt: new Date()
-  //               },
-  //               $push: {
-  //                 updates: {
-  //                   $each: [
-  //                     {
-  //                       description: `Product delivered!`,
-  //                       updatedAt: new Date()
-  //                     }
-  //                   ]
-  //                 }
-  //               }
-  //             }
-  //           }
-  //         }
-  //       ],
-  //       { ordered: false }
-  //     );
-  //     // await Promise.all([orderDetailsPromise, cartUpdatePromise]);
-  //     return res
-  //       .status(200)
-  //       .json(constructSuccessResponseBody({ message: "Order delivered!" }));
-  //   } catch (error) {
-  //     res
-  //       .status(500)
-  //       .json(
-  //         constructErrorResponseBody(
-  //           (error as MongoError)?.message || defaultErrorMessage
-  //         )
-  //       );
-  //   }
+    await CartSchema.bulkWrite(
+      [
+        {
+          updateMany: {
+            filter: {
+              orderId: orderId,
+              $or: [{ deliveredAt: null }, { deliveredAt: { $exists: false } }]
+            },
+            update: {
+              $set: {
+                deliveredAt: new Date(),
+                lastUpdatedAt: new Date()
+              },
+              $push: {
+                updates: {
+                  $each: [
+                    {
+                      description: `Product delivered!`,
+                      updatedAt: new Date()
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ],
+      { ordered: false }
+    );
+    // await Promise.all([orderDetailsPromise, cartUpdatePromise]);
+    return res
+      .status(200)
+      .json(constructSuccessResponseBody({ message: "Order delivered!" }));
+  } catch (error) {
+    res
+      .status(500)
+      .json(
+        constructErrorResponseBody(
+          (error as MongoError)?.message || defaultErrorMessage
+        )
+      );
+  }
 };
 
 export default orderDeliveredController;
