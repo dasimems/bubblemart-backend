@@ -34,9 +34,7 @@ const getAddressDetailsController: ControllerType = async (req, res) => {
         .json(constructErrorResponseBody("Address not found"));
     }
 
-    if (
-      addressDetails.userId?.toString() !== fetchedUserDetails.id?.toString()
-    ) {
+    if (String(addressDetails.userId) !== String(fetchedUserDetails.id)) {
       return res
         .status(403)
         .json(constructErrorResponseBody("Operation not allowed!"));

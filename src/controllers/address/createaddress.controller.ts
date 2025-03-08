@@ -58,18 +58,17 @@ const createAddressController: ControllerType = async (req, res) => {
   try {
     const { address, lat, lng } = body as AddressBodyType;
 
-    const availableAddress = await AddressSchema.find({
+    const availableAddress = await AddressSchema.findOne({
       userId: fetchedUserDetails.id,
       "coordinates.lng": lng,
       "coordinates.lat": lat
     });
-    if (availableAddress.length > 0) {
-      const [selectedAddress] = availableAddress;
+    if (availableAddress) {
       const data: AddressDetailsResponseType = {
-        address: selectedAddress.address,
-        coordinates: selectedAddress.coordinates,
-        id: selectedAddress.id,
-        createdAt: selectedAddress.createdAt
+        address: availableAddress.address,
+        coordinates: availableAddress.coordinates,
+        id: availableAddress.id,
+        createdAt: availableAddress.createdAt
       };
       return res.status(200).json(constructSuccessResponseBody(data));
     }

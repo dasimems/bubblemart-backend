@@ -22,7 +22,7 @@ const deleteAddressController: ControllerType = async (req, res) => {
       .json(constructErrorResponseBody("Address ID must be specified!"));
   }
   try {
-    const addressDetails = await AddressSchema.findById(id);
+    const addressDetails = await AddressSchema.findById(id).select("userId");
     if (!addressDetails) {
       return res
         .status(404)

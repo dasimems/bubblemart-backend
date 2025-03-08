@@ -6,7 +6,7 @@
     "lint": "eslint . --fix --quiet",
     "test": "jest",
     "build": "npx tsc",
-    "start": "npm run build && node dist/index.js",
+    "start": "NODE_OPTIONS=\"--max-old-space-size=8192\" && npm run build && node dist/index.js",
     "dev": "nodemon src/index.ts",
     "load-test": "artillery run load.yml"
   },
