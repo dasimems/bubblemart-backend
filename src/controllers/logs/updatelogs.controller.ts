@@ -49,7 +49,10 @@ const updateLogController: ControllerType = async (req, res) => {
   }
 
   try {
-    const logDetails = await LogSchema.exists({ _id: productId });
+    const logDetails = await LogSchema.exists({
+      _id: productId,
+      $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }]
+    });
 
     if (!logDetails) {
       return res.status(404).json(constructErrorResponseBody("Log not found"));
