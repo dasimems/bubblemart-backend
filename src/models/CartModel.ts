@@ -77,6 +77,8 @@ const cartSchema = new Schema<CartDetailsType>({
   }
 });
 
+cartSchema.index({ "productDetails.id": 1, "productDetails.type": 1 });
+
 const CartSchema = model(databaseKeys.carts, cartSchema);
 
 export default CartSchema;

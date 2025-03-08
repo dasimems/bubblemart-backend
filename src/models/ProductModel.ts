@@ -49,7 +49,6 @@ const productSchema = new Schema<ProductDetailsType>({
     index: true
   }
 });
-
 const ProductSchema = model(databaseKeys.products, productSchema);
 
 export default ProductSchema;
