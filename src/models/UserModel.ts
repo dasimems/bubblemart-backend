@@ -6,7 +6,8 @@ import updateSchema from "./UpdateModel";
 const userSchema = new Schema<UserDetailsType>({
   name: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   avatar: {
     type: String,

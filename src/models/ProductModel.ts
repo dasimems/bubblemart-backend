@@ -19,7 +19,8 @@ const productSchema = new Schema<ProductDetailsType>({
   },
   name: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   type: {
     type: String,
