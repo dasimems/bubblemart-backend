@@ -1,5 +1,5 @@
 config:
-  target: https://bubblemart-backend.onrender.com/v1
+  target: https://bubblemart-backend-dgtv.onrender.com/v1
   # phases:
   #   - duration: 20
   #     arrivalRate: 5
@@ -20,12 +20,21 @@ config:
   #   - duration: 20
   #     arrivalRate: 50
   #     name: Cool-down phase
+  # phases:
+  #   - duration: 1 
+  #     arrivalRate: 60
   phases:
-    - duration: 1 
-      arrivalRate: 60
+    - duration: 60  # Run the test for 60 seconds
+      arrivalRate: 10  # Start with 5 new requests per second
+      # rampTo: 20  # Increase gradually to 20 requests per second
+  processor: "./ip-rotate.js"
+
   http:
+    # localAddress: "{{ ip }}"  # Bind request to different IPs
+
     headers:
       Origin: "https://bubblemart.shop"
+      X-Forwarded-For: "{{ ip }}"
   plugins:
     ensure:
         thresholds:
@@ -33,9 +42,11 @@ config:
     expect: {}
 scenarios:
   - flow:
+    - function: "setRandomIP"
     - get:
         url: "/product"
         headers:
           Origin: "https://bubblemart.shop"
+          X-Forwarded-For: "{{ ip }}"
         expect:
           - statusCode: 200
